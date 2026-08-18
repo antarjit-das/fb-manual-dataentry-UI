@@ -60,11 +60,13 @@ import {
 // ────────────────────────────────────────────────────────────────────────────
 
 function getWorkbookPath(): string {
-  return path.resolve(process.env.WORKBOOK_PATH || "./data/facebook_dataset.xlsx");
+  const envPath = process.env.WORKBOOK_PATH || "./data/facebook_dataset.xlsx";
+  return path.join(process.cwd(), envPath);
 }
 
 function getBackupDir(): string {
-  return path.resolve(process.env.BACKUP_DIR || "./data/backups");
+  const envPath = process.env.BACKUP_DIR || "./data/backups";
+  return path.join(process.cwd(), envPath);
 }
 
 // ────────────────────────────────────────────────────────────────────────────
