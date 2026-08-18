@@ -4,12 +4,6 @@
  *
  * This module sits between the UI form data and the persistence layer.
  * It MUST NOT render UI or access files directly (AGENTS.md rule).
- *
- * Key responsibilities:
- *  1. Validate parent-child relationships (comment→post, reply→comment+post)
- *  2. Parse and sanitize numeric engagement fields
- *  3. Generate collection timestamps
- *  4. Prepare a form payload for persistence (assign IDs, set timestamps)
  */
 
 import type {
@@ -28,19 +22,6 @@ import { generateNextId, generateBatchIds, isValidId } from "./ids";
 
 /**
  * Parse a user-entered engagement value into a non-negative integer or null.
- *
- * Accepts:
- *  - numbers (returned as-is if integer and >= 0)
- *  - numeric strings like "123" or "0"
- *  - empty string, null, undefined → null
- *
- * Rejects:
- *  - free-form text like "1.2K", "many", "~500"
- *  - negative numbers
- *  - decimals like 1.5
- *
- * Per product_guide §12: "Numeric engagement fields must accept blank/null
- * or non-negative integers; reject free-form words such as '1.2K'."
  */
 export function parseEngagementCount(
   value: string | number | null | undefined
@@ -58,11 +39,9 @@ export function parseEngagementCount(
     return value;
   }
 
-  // String input
   const trimmed = value.trim();
   if (trimmed === "") return null;
 
-  // Reject anything that isn't purely digits (with optional leading whitespace)
   if (!/^\d+$/.test(trimmed)) {
     throw new Error(
       `Invalid engagement count: "${value}". Must be a non-negative integer, not free-form text.`
@@ -83,16 +62,10 @@ export function parseEngagementCount(
 // Timestamp helpers
 // ────────────────────────────────────────────────────────────────────────────
 
-/**
- * Generate an ISO 8601 collection timestamp for the current moment.
- */
 export function nowTimestamp(): string {
   return new Date().toISOString();
 }
 
-/**
- * Generate today's date in YYYY-MM-DD format.
- */
 export function todayDateStr(): string {
   return new Date().toISOString().split("T")[0];
 }
@@ -104,20 +77,10 @@ export function todayDateStr(): string {
 export interface RelationshipError {
   entity: "comment" | "reply";
   index: number;
-  parentIndex?: number; // for replies: the index of the parent comment
+  parentIndex?: number;
   message: string;
 }
 
-/**
- * Validate that all parent-child relationships in a post payload are correct.
- *
- * Rules (from product_guide §12):
- *  - A comment cannot exist without a parent post_id.
- *  - A reply cannot exist without a parent comment_id and matching post_id.
- *
- * This function checks structural consistency of the nested payload,
- * not ID format (that's handled by Zod schemas).
- */
 export function validateRelationships(
   postId: string,
   comments: Array<{ comment_id?: string; replies: Array<{ reply_id?: string }> }>
@@ -134,9 +97,6 @@ export function validateRelationships(
   }
 
   comments.forEach((comment, cIdx) => {
-    // Each comment must have at least comment_text (validated by Zod),
-    // but structurally it must belong to this post.
-    // If comment_id is provided, it must be valid format.
     if (comment.comment_id && !isValidId("comment", comment.comment_id)) {
       errors.push({
         entity: "comment",
@@ -145,7 +105,6 @@ export function validateRelationships(
       });
     }
 
-    // Validate each reply under this comment
     comment.replies.forEach((reply, rIdx) => {
       if (reply.reply_id && !isValidId("reply", reply.reply_id)) {
         errors.push({
@@ -171,21 +130,6 @@ export interface PreparedPayload {
   replies: Reply[];
 }
 
-/**
- * Prepare a form payload for persistence.
- *
- * This function:
- *  1. Assigns a post_id if missing (new post) or keeps existing (edit).
- *  2. Assigns comment_ids and reply_ids for new entries.
- *  3. Sets collection_timestamp on all entities that lack one.
- *  4. Wires parent-child foreign keys (post_id on comments, comment_id + post_id on replies).
- *  5. Returns flat arrays ready for workbook row insertion.
- *
- * @param formData      - The nested form payload from the UI.
- * @param existingPostIds    - All post IDs currently in the workbook.
- * @param existingCommentIds - All comment IDs currently in the workbook.
- * @param existingReplyIds   - All reply IDs currently in the workbook.
- */
 export function preparePayload(
   formData: PostFormData,
   existingPostIds: string[],
@@ -209,18 +153,18 @@ export function preparePayload(
     post_url: formData.post_url,
     source_name: formData.source_name,
     source_type: formData.source_type,
-    source_url: formData.source_url,
+    source_url: undefined,
     original_post_date: formData.original_post_date,
     collection_date: formData.collection_date || collectionDate,
     collection_timestamp: formData.collection_timestamp || timestamp,
     language: formData.language,
-    is_code_mixed: formData.is_code_mixed,
-    topic: formData.topic,
-    subtopic: formData.subtopic,
-    content_stance: formData.content_stance,
+    is_code_mixed: undefined,
+    topic: undefined,
+    subtopic: undefined,
+    content_stance: undefined,
     post_text: formData.post_text,
-    transcript: formData.transcript,
-    media_description: formData.media_description,
+    transcript: undefined,
+    media_description: undefined,
     view_count: formData.view_count ?? null,
     reaction_count: formData.reaction_count ?? null,
     like_count: formData.like_count ?? null,
@@ -235,7 +179,6 @@ export function preparePayload(
   };
 
   // ── Comment IDs ──────────────────────────────────────────────────────
-  // Count how many comments need new IDs
   const commentsNeedingIds = formData.comments.filter(
     (c) => !c.comment_id || !isValidId("comment", c.comment_id)
   ).length;
@@ -278,9 +221,9 @@ export function preparePayload(
       comment_text: commentForm.comment_text,
       comment_date: commentForm.comment_date,
       language: commentForm.language,
-      is_code_mixed: commentForm.is_code_mixed,
+      is_code_mixed: undefined,
       like_count: commentForm.like_count ?? null,
-      reply_count: commentForm.reply_count ?? null,
+      reply_count: null,
       collection_timestamp: commentForm.collection_timestamp || timestamp,
       notes: commentForm.notes,
     });
@@ -298,10 +241,10 @@ export function preparePayload(
         reply_text: replyForm.reply_text,
         reply_date: replyForm.reply_date,
         language: replyForm.language,
-        is_code_mixed: replyForm.is_code_mixed,
+        is_code_mixed: undefined,
         like_count: replyForm.like_count ?? null,
         collection_timestamp: replyForm.collection_timestamp || timestamp,
-        notes: replyForm.notes,
+        notes: undefined,
       });
     }
   }

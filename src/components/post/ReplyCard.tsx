@@ -3,12 +3,14 @@
 /**
  * ReplyCard — Nested reply entry card.
  *
- * Clean, minimalistic dark appearance with subtle left border indicator.
+ * Streamlined per user request:
+ *  - Removed: Code Mixed, Notes
+ *  - Retained: Text, Date/Time, Language, Likes, Remove action
  */
 
 import { Control, UseFormRegister, FieldErrors, useWatch } from "react-hook-form";
 import type { PostFormData } from "@/lib/types";
-import { LANGUAGES, YES_NO } from "@/lib/schemas";
+import { LANGUAGES } from "@/lib/schemas";
 
 interface ReplyCardProps {
   commentIndex: number;
@@ -113,23 +115,6 @@ export default function ReplyCard({
         </div>
 
         <div className="form-group">
-          <label className="form-label">Code Mixed?</label>
-          <select
-            {...register(
-              `comments.${commentIndex}.replies.${replyIndex}.is_code_mixed`
-            )}
-            className="form-select"
-          >
-            <option value="">-- Select --</option>
-            {YES_NO.map((val) => (
-              <option key={val} value={val}>
-                {val}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="form-group">
           <label className="form-label">Likes</label>
           <input
             type="number"
@@ -144,18 +129,6 @@ export default function ReplyCard({
             placeholder="0"
           />
         </div>
-      </div>
-
-      <div className="form-group" style={{ marginBottom: "0.25rem" }}>
-        <label className="form-label">Notes</label>
-        <input
-          type="text"
-          {...register(
-            `comments.${commentIndex}.replies.${replyIndex}.notes`
-          )}
-          className="form-input"
-          placeholder="Optional notes..."
-        />
       </div>
     </div>
   );

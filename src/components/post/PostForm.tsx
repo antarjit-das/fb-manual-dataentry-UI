@@ -3,17 +3,19 @@
 /**
  * PostForm — Main hierarchical post-entry and editing form.
  *
- * Designed with a clean, ChatGPT-like dark UI philosophy:
- *  - Discrete flat sections with subtle dividers
- *  - Restrained typography and dark charcoal inputs
- *  - Responsive multi-column layout
- *  - Real-time pre-save validation status
+ * Streamlined sections per user request:
+ *  1. Post Identification
+ *  2. Source & Metadata (source name, source type, dates, language)
+ *  3. Post Content (post text)
+ *  4. Engagement Counts (all metrics retained)
+ *  5. Conversation Data (simplified comments & replies)
+ *  6. Save Summary Bar
  */
 
 import { useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { PostFormSchema, CONTENT_TYPES, SOURCE_TYPES, LANGUAGES, YES_NO, CONTENT_STANCES } from "@/lib/schemas";
+import { PostFormSchema, CONTENT_TYPES, SOURCE_TYPES, LANGUAGES } from "@/lib/schemas";
 import type { PostFormData, SaveResult } from "@/lib/types";
 import { todayDateStr } from "@/lib/domain";
 import StatusBar from "@/components/common/StatusBar";
@@ -40,17 +42,10 @@ export default function PostForm({
     post_url: "",
     source_name: "",
     source_type: "News Page",
-    source_url: "",
     original_post_date: "",
     collection_date: todayDateStr(),
     language: "Assamese",
-    is_code_mixed: "No",
-    topic: "",
-    subtopic: "",
-    content_stance: undefined,
     post_text: "",
-    transcript: "",
-    media_description: "",
     view_count: null,
     reaction_count: null,
     like_count: null,
@@ -92,9 +87,7 @@ export default function PostForm({
       comment_text: "",
       comment_date: "",
       language: undefined,
-      is_code_mixed: undefined,
       like_count: null,
-      reply_count: null,
       notes: "",
       replies: [],
     });
@@ -225,18 +218,6 @@ export default function PostForm({
           </div>
 
           <div className="form-group">
-            <label className="form-label">Source Page URL</label>
-            <input
-              type="url"
-              {...register("source_url")}
-              className="form-input"
-              placeholder="https://facebook.com/page..."
-            />
-          </div>
-        </div>
-
-        <div className="form-row">
-          <div className="form-group">
             <label className="form-label">Original Published Date</label>
             <input
               type="text"
@@ -245,7 +226,9 @@ export default function PostForm({
               placeholder="YYYY-MM-DD or relative string"
             />
           </div>
+        </div>
 
+        <div className="form-row">
           <div className="form-group">
             <label className="form-label">
               Collection Date <span className="required">*</span>
@@ -272,99 +255,26 @@ export default function PostForm({
         </div>
       </section>
 
-      {/* 3. Classification */}
+      {/* 3. Content */}
       <section className="form-section">
         <div className="form-section-title">
-          <span>3. Research Classification</span>
+          <span>3. Post Content</span>
         </div>
-        <div className="form-row">
-          <div className="form-group">
-            <label className="form-label">
-              Code-Mixed? <span className="required">*</span>
-            </label>
-            <select {...register("is_code_mixed")} className="form-select">
-              {YES_NO.map((val) => (
-                <option key={val} value={val}>
-                  {val}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label className="form-label">Topic</label>
-            <input
-              type="text"
-              {...register("topic")}
-              className="form-input"
-              placeholder="e.g. Politics, Economy, Culture"
-            />
-          </div>
-
-          <div className="form-group">
-            <label className="form-label">Subtopic</label>
-            <input
-              type="text"
-              {...register("subtopic")}
-              className="form-input"
-              placeholder="e.g. Elections, Infrastructure"
-            />
-          </div>
-
-          <div className="form-group">
-            <label className="form-label">Content Stance</label>
-            <select {...register("content_stance")} className="form-select">
-              <option value="">-- Stance --</option>
-              {CONTENT_STANCES.map((stance) => (
-                <option key={stance} value={stance}>
-                  {stance}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-      </section>
-
-      {/* 4. Content */}
-      <section className="form-section">
-        <div className="form-section-title">
-          <span>4. Text & Content</span>
-        </div>
-        <div className="form-group">
+        <div className="form-group" style={{ marginBottom: "0.25rem" }}>
           <label className="form-label">Post Caption / Body Text</label>
           <textarea
             {...register("post_text")}
             className="form-textarea"
             placeholder="Paste raw post text or caption exactly as published..."
-            rows={4}
-          />
-        </div>
-
-        <div className="form-group">
-          <label className="form-label">Transcript (Video / Audio)</label>
-          <textarea
-            {...register("transcript")}
-            className="form-textarea"
-            placeholder="Video speech transcript or audio translation..."
-            rows={3}
-          />
-        </div>
-
-        <div className="form-group">
-          <label className="form-label">Media Description</label>
-          <input
-            type="text"
-            {...register("media_description")}
-            className="form-input"
-            placeholder="e.g. Infographic diagram, assembly photo, thumbnail"
+            rows={5}
           />
         </div>
       </section>
 
-      {/* 5. Engagement Metrics */}
+      {/* 4. Engagement Metrics */}
       <section className="form-section">
         <div className="form-section-title">
-          <span>5. Engagement Counts</span>
+          <span>4. Engagement Counts</span>
         </div>
         <div className="form-row">
           <div className="form-group">
@@ -482,10 +392,10 @@ export default function PostForm({
         </div>
       </section>
 
-      {/* 6. Comments & Nested Replies */}
+      {/* 5. Comments & Nested Replies */}
       <section className="form-section">
         <div className="form-section-title">
-          <span>6. Conversation Data ({fields.length} Comments, {totalReplies} Replies)</span>
+          <span>5. Conversation Data ({fields.length} Comments, {totalReplies} Replies)</span>
           <button
             type="button"
             onClick={handleAddComment}
@@ -513,7 +423,7 @@ export default function PostForm({
         )}
       </section>
 
-      {/* 7. Save & Pre-save summary bar */}
+      {/* 6. Save Summary bar */}
       <div className="save-summary-bar">
         <div className="save-summary-meta">
           <strong>Payload Summary:</strong> 1 Post &middot; {fields.length} Comment(s) &middot; {totalReplies} Reply/Replies

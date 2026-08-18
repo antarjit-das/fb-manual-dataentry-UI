@@ -5,7 +5,6 @@
  * and validation rules. All other layers (persistence, API, UI) import from here.
  *
  * Rules (from AGENTS.md):
- *  - Do NOT add fields unless explicitly instructed.
  *  - Controlled values must match the CODEBOOK / product_guide exactly.
  *  - Original text is stored unchanged — no trimming or transforming.
  */
@@ -14,7 +13,6 @@ import { z } from "zod";
 
 // ────────────────────────────────────────────────────────────────────────────
 // Controlled-Value Enums
-// These MUST match product_guide.md §4.3 exactly.
 // ────────────────────────────────────────────────────────────────────────────
 
 export const CONTENT_TYPES = ["Post", "Reel", "Video", "Other"] as const;
@@ -106,8 +104,8 @@ export const PostSchema = z.object({
   collection_timestamp: z.string().min(1, "Collection timestamp is required"),
   language: z.enum(LANGUAGES),
 
-  // Classification
-  is_code_mixed: z.enum(YES_NO),
+  // Classification (optional in stored sheet model)
+  is_code_mixed: z.enum(YES_NO).optional(),
   topic: optionalText,
   subtopic: optionalText,
   content_stance: z.enum(CONTENT_STANCES).optional(),
@@ -214,11 +212,10 @@ export const CollectionLogSchema = z.object({
 
 // ────────────────────────────────────────────────────────────────────────────
 // FORM PAYLOAD — the nested shape sent from the UI to the API on Save
-//
-// This is the hierarchical view: one post with N comments, each comment
-// with M replies. The API/domain layer flattens this into sheet rows.
-//
-// Note: IDs are optional here because the server generates them if missing.
+// Updated per user preferences:
+//  - Removed: source_url, research classification (is_code_mixed, topic, subtopic, content_stance), transcript, media_description
+//  - Comments: removed is_code_mixed, reply_count
+//  - Replies: removed is_code_mixed, notes
 // ────────────────────────────────────────────────────────────────────────────
 
 export const ReplyFormSchema = z.object({
@@ -226,10 +223,8 @@ export const ReplyFormSchema = z.object({
   reply_text: z.string().min(1, "Reply text is required"),
   reply_date: optionalDateStr,
   language: z.enum(LANGUAGES).optional(),
-  is_code_mixed: z.enum(YES_NO).optional(),
   like_count: engagementCount,
   collection_timestamp: optionalText,
-  notes: optionalText,
 });
 
 export const CommentFormSchema = z.object({
@@ -237,9 +232,7 @@ export const CommentFormSchema = z.object({
   comment_text: z.string().min(1, "Comment text is required"),
   comment_date: optionalDateStr,
   language: z.enum(LANGUAGES).optional(),
-  is_code_mixed: z.enum(YES_NO).optional(),
   like_count: engagementCount,
-  reply_count: engagementCount,
   collection_timestamp: optionalText,
   notes: optionalText,
   replies: z.array(ReplyFormSchema).default([]),
@@ -249,32 +242,23 @@ export const PostFormSchema = z.object({
   // post_id is optional on create (server generates), required on edit
   post_id: z.string().optional(),
 
-  // Identity
+  // 1. Identity
   platform: z.string().default("Facebook"),
   content_type: z.enum(CONTENT_TYPES),
   post_url: optionalText,
 
-  // Source & dates
+  // 2. Source & dates
   source_name: z.string().min(1, "Source name is required"),
   source_type: z.enum(SOURCE_TYPES),
-  source_url: optionalText,
   original_post_date: optionalDateStr,
   collection_date: z.string().min(1, "Collection date is required"),
   collection_timestamp: optionalText,
   language: z.enum(LANGUAGES),
 
-  // Classification
-  is_code_mixed: z.enum(YES_NO),
-  topic: optionalText,
-  subtopic: optionalText,
-  content_stance: z.enum(CONTENT_STANCES).optional(),
-
-  // Content
+  // 3. Content
   post_text: optionalText,
-  transcript: optionalText,
-  media_description: optionalText,
 
-  // Engagement metrics
+  // 4. Engagement metrics
   view_count: engagementCount,
   reaction_count: engagementCount,
   like_count: engagementCount,
@@ -285,10 +269,8 @@ export const PostFormSchema = z.object({
   wow_count: engagementCount,
   care_count: engagementCount,
   share_count: engagementCount,
-
-  // Research
   comment_count: engagementCount,
 
-  // Nested children
+  // 5. Nested comments & replies
   comments: z.array(CommentFormSchema).default([]),
 });

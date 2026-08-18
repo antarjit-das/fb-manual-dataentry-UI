@@ -2,11 +2,15 @@
 
 /**
  * CommentCard — Card for capturing top-level comment and its nested replies.
+ *
+ * Streamlined per user request:
+ *  - Removed: Code Mixed, Visible Reply Count
+ *  - Retained: Text, Date/Time, Language, Likes, Notes, Nested Replies Repeater
  */
 
 import { Control, UseFormRegister, FieldErrors, useFieldArray, useWatch } from "react-hook-form";
 import type { PostFormData } from "@/lib/types";
-import { LANGUAGES, YES_NO } from "@/lib/schemas";
+import { LANGUAGES } from "@/lib/schemas";
 import ReplyCard from "./ReplyCard";
 
 interface CommentCardProps {
@@ -51,9 +55,7 @@ export default function CommentCard({
       reply_text: "",
       reply_date: "",
       language: undefined,
-      is_code_mixed: undefined,
       like_count: null,
-      notes: "",
     });
   };
 
@@ -119,39 +121,11 @@ export default function CommentCard({
         </div>
 
         <div className="form-group">
-          <label className="form-label">Code Mixed?</label>
-          <select
-            {...register(`comments.${commentIndex}.is_code_mixed`)}
-            className="form-select"
-          >
-            <option value="">-- Select --</option>
-            {YES_NO.map((val) => (
-              <option key={val} value={val}>
-                {val}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="form-group">
           <label className="form-label">Likes</label>
           <input
             type="number"
             min={0}
             {...register(`comments.${commentIndex}.like_count`, {
-              setValueAs: (v) => (v === "" || isNaN(v) ? null : parseInt(v, 10)),
-            })}
-            className="form-input"
-            placeholder="0"
-          />
-        </div>
-
-        <div className="form-group">
-          <label className="form-label">Visible Reply Count</label>
-          <input
-            type="number"
-            min={0}
-            {...register(`comments.${commentIndex}.reply_count`, {
               setValueAs: (v) => (v === "" || isNaN(v) ? null : parseInt(v, 10)),
             })}
             className="form-input"
