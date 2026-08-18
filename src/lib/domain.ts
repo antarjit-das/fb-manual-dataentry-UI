@@ -1,9 +1,6 @@
 /**
  * domain.ts — Pure business logic: relationship validation, field sanitization,
  * and payload normalization.
- *
- * This module sits between the UI form data and the persistence layer.
- * It MUST NOT render UI or access files directly (AGENTS.md rule).
  */
 
 import type {
@@ -20,9 +17,6 @@ import { generateNextId, generateBatchIds, isValidId } from "./ids";
 // Numeric field sanitization
 // ────────────────────────────────────────────────────────────────────────────
 
-/**
- * Parse a user-entered engagement value into a non-negative integer or null.
- */
 export function parseEngagementCount(
   value: string | number | null | undefined
 ): number | null {
@@ -32,9 +26,7 @@ export function parseEngagementCount(
 
   if (typeof value === "number") {
     if (!Number.isInteger(value) || value < 0) {
-      throw new Error(
-        `Invalid engagement count: ${value}. Must be a non-negative integer.`
-      );
+      return null;
     }
     return value;
   }
@@ -43,16 +35,12 @@ export function parseEngagementCount(
   if (trimmed === "") return null;
 
   if (!/^\d+$/.test(trimmed)) {
-    throw new Error(
-      `Invalid engagement count: "${value}". Must be a non-negative integer, not free-form text.`
-    );
+    return null;
   }
 
   const num = parseInt(trimmed, 10);
   if (isNaN(num) || num < 0) {
-    throw new Error(
-      `Invalid engagement count: "${value}". Must be a non-negative integer.`
-    );
+    return null;
   }
 
   return num;
@@ -60,7 +48,7 @@ export function parseEngagementCount(
 
 // ────────────────────────────────────────────────────────────────────────────
 // Timestamp helpers
-// ────────────────────────────────────────────────────────────────────────────
+// ───────────────────────────────────────────────────────────────────────────
 
 export function nowTimestamp(): string {
   return new Date().toISOString();
@@ -149,15 +137,15 @@ export function preparePayload(
   const post: Post = {
     post_id: postId,
     platform: formData.platform || "Facebook",
-    content_type: formData.content_type,
+    content_type: formData.content_type || "Post",
     post_url: formData.post_url,
-    source_name: formData.source_name,
-    source_type: formData.source_type,
+    source_name: formData.source_name || "Unknown Source",
+    source_type: formData.source_type || "News Page",
     source_url: undefined,
     original_post_date: formData.original_post_date,
     collection_date: formData.collection_date || collectionDate,
     collection_timestamp: formData.collection_timestamp || timestamp,
-    language: formData.language,
+    language: formData.language || "Assamese",
     is_code_mixed: undefined,
     topic: undefined,
     subtopic: undefined,
@@ -174,7 +162,7 @@ export function preparePayload(
     sad_count: formData.sad_count ?? null,
     wow_count: formData.wow_count ?? null,
     care_count: formData.care_count ?? null,
-    share_count: formData.share_count ?? null,
+    share_count: null,
     comment_count: formData.comment_count ?? null,
   };
 
@@ -218,8 +206,8 @@ export function preparePayload(
     comments.push({
       comment_id: commentId,
       post_id: postId,
-      comment_text: commentForm.comment_text,
-      comment_date: commentForm.comment_date,
+      comment_text: commentForm.comment_text || "",
+      comment_date: undefined,
       language: commentForm.language,
       is_code_mixed: undefined,
       like_count: commentForm.like_count ?? null,
@@ -238,8 +226,8 @@ export function preparePayload(
         reply_id: replyId,
         comment_id: commentId,
         post_id: postId,
-        reply_text: replyForm.reply_text,
-        reply_date: replyForm.reply_date,
+        reply_text: replyForm.reply_text || "",
+        reply_date: undefined,
         language: replyForm.language,
         is_code_mixed: undefined,
         like_count: replyForm.like_count ?? null,

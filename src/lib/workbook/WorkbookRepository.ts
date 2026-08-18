@@ -447,7 +447,6 @@ export async function getPost(postId: string): Promise<PostFormData | null> {
       sad_count: post.sad_count,
       wow_count: post.wow_count,
       care_count: post.care_count,
-      share_count: post.share_count,
       comment_count: post.comment_count,
       comments,
     };

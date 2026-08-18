@@ -4,8 +4,8 @@
  * This file is the SINGLE SOURCE OF TRUTH for field definitions, controlled values,
  * and validation rules. All other layers (persistence, API, UI) import from here.
  *
- * Rules (from AGENTS.md):
- *  - Controlled values must match the CODEBOOK / product_guide exactly.
+ * Rules:
+ *  - Lenient form validation: empty fields default to neutral/fallback values.
  *  - Original text is stored unchanged — no trimming or transforming.
  */
 
@@ -72,7 +72,7 @@ export const CONFIDENCE_LEVELS = [1, 2, 3, 4, 5] as const;
 // Shared field schemas
 // ────────────────────────────────────────────────────────────────────────────
 
-/** Non-negative integer or null. Rejects decimals and free-form text like "1.2K". */
+/** Non-negative integer or null. */
 const engagementCount = z
   .union([z.number().int().min(0), z.null()])
   .optional();
@@ -92,17 +92,17 @@ export const PostSchema = z.object({
   // Identity
   post_id: z.string().regex(/^FB_\d{6}$/, "Must match FB_000000 format"),
   platform: z.string().default("Facebook"),
-  content_type: z.enum(CONTENT_TYPES),
+  content_type: z.enum(CONTENT_TYPES).default("Post"),
   post_url: optionalText,
 
   // Source & dates
-  source_name: z.string().min(1, "Source name is required"),
-  source_type: z.enum(SOURCE_TYPES),
+  source_name: z.string().default("Unknown Source"),
+  source_type: z.enum(SOURCE_TYPES).default("Other"),
   source_url: optionalText,
   original_post_date: optionalDateStr,
-  collection_date: z.string().min(1, "Collection date is required"),
-  collection_timestamp: z.string().min(1, "Collection timestamp is required"),
-  language: z.enum(LANGUAGES),
+  collection_date: z.string().default(""),
+  collection_timestamp: z.string().default(""),
+  language: z.enum(LANGUAGES).default("Assamese"),
 
   // Classification (optional in stored sheet model)
   is_code_mixed: z.enum(YES_NO).optional(),
@@ -110,7 +110,7 @@ export const PostSchema = z.object({
   subtopic: optionalText,
   content_stance: z.enum(CONTENT_STANCES).optional(),
 
-  // Content — stored as-is, never cleaned
+  // Content
   post_text: optionalText,
   transcript: optionalText,
   media_description: optionalText,
@@ -126,8 +126,6 @@ export const PostSchema = z.object({
   wow_count: engagementCount,
   care_count: engagementCount,
   share_count: engagementCount,
-
-  // Research notes
   comment_count: engagementCount,
 });
 
@@ -139,7 +137,7 @@ export const PostSchema = z.object({
 export const CommentSchema = z.object({
   comment_id: z.string().regex(/^C_\d{6}$/, "Must match C_000000 format"),
   post_id: z.string().regex(/^FB_\d{6}$/, "Must reference a valid post_id"),
-  comment_text: z.string().min(1, "Comment text is required"),
+  comment_text: z.string().default(""),
   comment_date: optionalDateStr,
   language: z.enum(LANGUAGES).optional(),
   is_code_mixed: z.enum(YES_NO).optional(),
@@ -160,7 +158,7 @@ export const ReplySchema = z.object({
     .string()
     .regex(/^C_\d{6}$/, "Must reference a valid comment_id"),
   post_id: z.string().regex(/^FB_\d{6}$/, "Must reference a valid post_id"),
-  reply_text: z.string().min(1, "Reply text is required"),
+  reply_text: z.string().default(""),
   reply_date: optionalDateStr,
   language: z.enum(LANGUAGES).optional(),
   is_code_mixed: z.enum(YES_NO).optional(),
@@ -171,19 +169,17 @@ export const ReplySchema = z.object({
 
 // ────────────────────────────────────────────────────────────────────────────
 // SOURCE schema
-// One row in the SOURCES sheet. Deduplication by source_name / source_url.
 // ────────────────────────────────────────────────────────────────────────────
 
 export const SourceSchema = z.object({
   source_id: z.string().regex(/^S_\d{6}$/, "Must match S_000000 format"),
-  source_name: z.string().min(1, "Source name is required"),
-  source_type: z.enum(SOURCE_TYPES),
+  source_name: z.string().default("Unknown Source"),
+  source_type: z.enum(SOURCE_TYPES).default("Other"),
   source_url: optionalText,
 });
 
 // ────────────────────────────────────────────────────────────────────────────
-// ANNOTATION schema (MVP: structure only, no workflow)
-// One row in the ANNOTATIONS sheet. FK → COMMENTS.comment_id
+// ANNOTATION schema
 // ────────────────────────────────────────────────────────────────────────────
 
 export const AnnotationSchema = z.object({
@@ -199,7 +195,6 @@ export const AnnotationSchema = z.object({
 
 // ────────────────────────────────────────────────────────────────────────────
 // COLLECTION_LOG schema
-// One row per session in the COLLECTION_LOG sheet.
 // ────────────────────────────────────────────────────────────────────────────
 
 export const CollectionLogSchema = z.object({
@@ -211,26 +206,20 @@ export const CollectionLogSchema = z.object({
 });
 
 // ────────────────────────────────────────────────────────────────────────────
-// FORM PAYLOAD — the nested shape sent from the UI to the API on Save
-// Updated per user preferences:
-//  - Removed: source_url, research classification (is_code_mixed, topic, subtopic, content_stance), transcript, media_description
-//  - Comments: removed is_code_mixed, reply_count
-//  - Replies: removed is_code_mixed, notes
+// FORM PAYLOAD — Lenient schemas with non-strict defaults
 // ────────────────────────────────────────────────────────────────────────────
 
 export const ReplyFormSchema = z.object({
-  reply_id: z.string().optional(), // generated server-side if blank
-  reply_text: z.string().min(1, "Reply text is required"),
-  reply_date: optionalDateStr,
+  reply_id: z.string().optional(),
+  reply_text: z.string().optional().default(""),
   language: z.enum(LANGUAGES).optional(),
   like_count: engagementCount,
   collection_timestamp: optionalText,
 });
 
 export const CommentFormSchema = z.object({
-  comment_id: z.string().optional(), // generated server-side if blank
-  comment_text: z.string().min(1, "Comment text is required"),
-  comment_date: optionalDateStr,
+  comment_id: z.string().optional(),
+  comment_text: z.string().optional().default(""),
   language: z.enum(LANGUAGES).optional(),
   like_count: engagementCount,
   collection_timestamp: optionalText,
@@ -239,26 +228,25 @@ export const CommentFormSchema = z.object({
 });
 
 export const PostFormSchema = z.object({
-  // post_id is optional on create (server generates), required on edit
   post_id: z.string().optional(),
 
   // 1. Identity
   platform: z.string().default("Facebook"),
-  content_type: z.enum(CONTENT_TYPES),
+  content_type: z.enum(CONTENT_TYPES).default("Post"),
   post_url: optionalText,
 
   // 2. Source & dates
-  source_name: z.string().min(1, "Source name is required"),
-  source_type: z.enum(SOURCE_TYPES),
+  source_name: z.string().optional().default("Unknown Source"),
+  source_type: z.enum(SOURCE_TYPES).default("News Page"),
   original_post_date: optionalDateStr,
-  collection_date: z.string().min(1, "Collection date is required"),
+  collection_date: z.string().optional(),
   collection_timestamp: optionalText,
-  language: z.enum(LANGUAGES),
+  language: z.enum(LANGUAGES).default("Assamese"),
 
   // 3. Content
   post_text: optionalText,
 
-  // 4. Engagement metrics
+  // 4. Engagement metrics (share_count removed from form)
   view_count: engagementCount,
   reaction_count: engagementCount,
   like_count: engagementCount,
@@ -268,7 +256,6 @@ export const PostFormSchema = z.object({
   sad_count: engagementCount,
   wow_count: engagementCount,
   care_count: engagementCount,
-  share_count: engagementCount,
   comment_count: engagementCount,
 
   // 5. Nested comments & replies

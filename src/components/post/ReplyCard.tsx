@@ -4,8 +4,8 @@
  * ReplyCard — Nested reply entry card.
  *
  * Streamlined per user request:
- *  - Removed: Code Mixed, Notes
- *  - Retained: Text, Date/Time, Language, Likes, Remove action
+ *  - Removed date/time, code mixed, notes
+ *  - Lenient fields
  */
 
 import { Control, UseFormRegister, FieldErrors, useWatch } from "react-hook-form";
@@ -68,35 +68,18 @@ export default function ReplyCard({
       </div>
 
       <div className="form-group">
-        <label className="form-label">
-          Reply Text <span className="required">*</span>
-        </label>
+        <label className="form-label">Reply Text</label>
         <textarea
           {...register(
             `comments.${commentIndex}.replies.${replyIndex}.reply_text`
           )}
           className={`form-textarea ${replyErrors?.reply_text ? "error" : ""}`}
-          placeholder="Enter raw reply text..."
+          placeholder="Enter reply text..."
           rows={2}
         />
-        {replyErrors?.reply_text && (
-          <div className="form-error">{replyErrors.reply_text.message}</div>
-        )}
       </div>
 
       <div className="form-row">
-        <div className="form-group">
-          <label className="form-label">Reply Date / Time</label>
-          <input
-            type="text"
-            {...register(
-              `comments.${commentIndex}.replies.${replyIndex}.reply_date`
-            )}
-            className="form-input"
-            placeholder="e.g. 2026-08-17"
-          />
-        </div>
-
         <div className="form-group">
           <label className="form-label">Language</label>
           <select

@@ -3,13 +3,10 @@
 /**
  * PostForm — Main hierarchical post-entry and editing form.
  *
- * Streamlined sections per user request:
- *  1. Post Identification
- *  2. Source & Metadata (source name, source type, dates, language)
- *  3. Post Content (post text)
- *  4. Engagement Counts (all metrics retained)
- *  5. Conversation Data (simplified comments & replies)
- *  6. Save Summary Bar
+ * Streamlined:
+ *  - "+ Add Comment" moved to the bottom of Conversation Data
+ *  - Removed shares count from Engagement Metrics
+ *  - All fields are non-strict with sensible neutral defaults
  */
 
 import { useState } from "react";
@@ -40,7 +37,7 @@ export default function PostForm({
     platform: "Facebook",
     content_type: "Post",
     post_url: "",
-    source_name: "",
+    source_name: "Unknown Source",
     source_type: "News Page",
     original_post_date: "",
     collection_date: todayDateStr(),
@@ -55,7 +52,6 @@ export default function PostForm({
     sad_count: null,
     wow_count: null,
     care_count: null,
-    share_count: null,
     comment_count: null,
     comments: [],
   };
@@ -85,7 +81,6 @@ export default function PostForm({
   const handleAddComment = () => {
     append({
       comment_text: "",
-      comment_date: "",
       language: undefined,
       like_count: null,
       notes: "",
@@ -159,9 +154,7 @@ export default function PostForm({
           </div>
 
           <div className="form-group">
-            <label className="form-label">
-              Content Type <span className="required">*</span>
-            </label>
+            <label className="form-label">Content Type</label>
             <select {...register("content_type")} className="form-select">
               {CONTENT_TYPES.map((type) => (
                 <option key={type} value={type}>
@@ -190,24 +183,17 @@ export default function PostForm({
         </div>
         <div className="form-row">
           <div className="form-group">
-            <label className="form-label">
-              Source Name / Page <span className="required">*</span>
-            </label>
+            <label className="form-label">Source Name / Page</label>
             <input
               type="text"
               {...register("source_name")}
-              className={`form-input ${errors.source_name ? "error" : ""}`}
+              className="form-input"
               placeholder="e.g. Pratidin Time, Assam Tribune"
             />
-            {errors.source_name && (
-              <div className="form-error">{errors.source_name.message}</div>
-            )}
           </div>
 
           <div className="form-group">
-            <label className="form-label">
-              Source Type <span className="required">*</span>
-            </label>
+            <label className="form-label">Source Type</label>
             <select {...register("source_type")} className="form-select">
               {SOURCE_TYPES.map((type) => (
                 <option key={type} value={type}>
@@ -230,9 +216,7 @@ export default function PostForm({
 
         <div className="form-row">
           <div className="form-group">
-            <label className="form-label">
-              Collection Date <span className="required">*</span>
-            </label>
+            <label className="form-label">Collection Date</label>
             <input
               type="text"
               {...register("collection_date")}
@@ -241,9 +225,7 @@ export default function PostForm({
           </div>
 
           <div className="form-group">
-            <label className="form-label">
-              Primary Language <span className="required">*</span>
-            </label>
+            <label className="form-label">Primary Language</label>
             <select {...register("language")} className="form-select">
               {LANGUAGES.map((lang) => (
                 <option key={lang} value={lang}>
@@ -265,7 +247,7 @@ export default function PostForm({
           <textarea
             {...register("post_text")}
             className="form-textarea"
-            placeholder="Paste raw post text or caption exactly as published..."
+            placeholder="Paste raw post text or caption..."
             rows={5}
           />
         </div>
@@ -370,16 +352,6 @@ export default function PostForm({
             />
           </div>
           <div className="form-group">
-            <label className="form-label">Shares</label>
-            <input
-              type="number"
-              min={0}
-              {...register("share_count", { setValueAs: (v) => v === "" || isNaN(v) ? null : parseInt(v, 10) })}
-              className="form-input"
-              placeholder="0"
-            />
-          </div>
-          <div className="form-group">
             <label className="form-label">Total Visible Comments</label>
             <input
               type="number"
@@ -396,18 +368,11 @@ export default function PostForm({
       <section className="form-section">
         <div className="form-section-title">
           <span>5. Conversation Data ({fields.length} Comments, {totalReplies} Replies)</span>
-          <button
-            type="button"
-            onClick={handleAddComment}
-            className="btn btn-secondary btn-sm"
-          >
-            + Add Comment
-          </button>
         </div>
 
         {fields.length === 0 ? (
-          <div className="text-tertiary" style={{ padding: "1rem 0", fontSize: "0.8125rem" }}>
-            No comments added yet. Click &quot;+ Add Comment&quot; to capture top-level comments and replies.
+          <div className="text-tertiary" style={{ padding: "0.75rem 0", fontSize: "0.8125rem" }}>
+            No comments added yet. Click &quot;+ Add Comment&quot; below to add one.
           </div>
         ) : (
           fields.map((field, cIdx) => (
@@ -421,6 +386,17 @@ export default function PostForm({
             />
           ))
         )}
+
+        {/* Add Comment button at the bottom of the section */}
+        <div style={{ marginTop: "1rem", paddingTop: "0.5rem" }}>
+          <button
+            type="button"
+            onClick={handleAddComment}
+            className="btn btn-secondary btn-sm"
+          >
+            + Add Comment
+          </button>
+        </div>
       </section>
 
       {/* 6. Save Summary bar */}

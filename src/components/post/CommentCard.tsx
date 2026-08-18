@@ -3,9 +3,9 @@
 /**
  * CommentCard — Card for capturing top-level comment and its nested replies.
  *
- * Streamlined per user request:
- *  - Removed: Code Mixed, Visible Reply Count
- *  - Retained: Text, Date/Time, Language, Likes, Notes, Nested Replies Repeater
+ * Streamlined:
+ *  - Removed date/time, code mixed, visible reply count
+ *  - Added "+ Add Reply" button to bottom of nested replies list
  */
 
 import { Control, UseFormRegister, FieldErrors, useFieldArray, useWatch } from "react-hook-form";
@@ -53,7 +53,6 @@ export default function CommentCard({
   const handleAddReply = () => {
     append({
       reply_text: "",
-      reply_date: "",
       language: undefined,
       like_count: null,
     });
@@ -80,31 +79,16 @@ export default function CommentCard({
       </div>
 
       <div className="form-group">
-        <label className="form-label">
-          Comment Text <span className="required">*</span>
-        </label>
+        <label className="form-label">Comment Text</label>
         <textarea
           {...register(`comments.${commentIndex}.comment_text`)}
           className={`form-textarea ${commentErrors?.comment_text ? "error" : ""}`}
           placeholder="Paste or enter raw comment text..."
           rows={3}
         />
-        {commentErrors?.comment_text && (
-          <div className="form-error">{commentErrors.comment_text.message}</div>
-        )}
       </div>
 
       <div className="form-row">
-        <div className="form-group">
-          <label className="form-label">Comment Date / Time</label>
-          <input
-            type="text"
-            {...register(`comments.${commentIndex}.comment_date`)}
-            className="form-input"
-            placeholder="e.g. 2026-08-17"
-          />
-        </div>
-
         <div className="form-group">
           <label className="form-label">Language</label>
           <select
@@ -146,17 +130,10 @@ export default function CommentCard({
 
       {/* Nested Replies Section */}
       <div className="mt-2" style={{ borderTop: "1px solid var(--border-subtle)", paddingTop: "0.85rem" }}>
-        <div className="flex-between mb-1">
+        <div className="mb-1">
           <span style={{ fontSize: "0.75rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--text-tertiary)" }}>
             Nested Replies ({fields.length})
           </span>
-          <button
-            type="button"
-            onClick={handleAddReply}
-            className="btn btn-secondary btn-sm"
-          >
-            + Add Reply
-          </button>
         </div>
 
         {fields.map((field, rIdx) => (
@@ -170,6 +147,17 @@ export default function CommentCard({
             onRemove={() => remove(rIdx)}
           />
         ))}
+
+        {/* Add Reply button at bottom */}
+        <div style={{ marginTop: "0.5rem" }}>
+          <button
+            type="button"
+            onClick={handleAddReply}
+            className="btn btn-secondary btn-sm"
+          >
+            + Add Reply
+          </button>
+        </div>
       </div>
     </div>
   );
