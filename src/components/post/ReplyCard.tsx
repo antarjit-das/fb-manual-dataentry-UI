@@ -3,9 +3,10 @@
 /**
  * ReplyCard — Nested reply entry card.
  *
- * Streamlined per user request:
+ * Streamlined:
+ *  - Likes field defaults to 0
+ *  - Language defaults to English
  *  - Removed date/time, code mixed, notes
- *  - Lenient fields
  */
 
 import { Control, UseFormRegister, FieldErrors, useWatch } from "react-hook-form";
@@ -87,8 +88,8 @@ export default function ReplyCard({
               `comments.${commentIndex}.replies.${replyIndex}.language`
             )}
             className="form-select"
+            defaultValue="English"
           >
-            <option value="">-- Language --</option>
             {LANGUAGES.map((lang) => (
               <option key={lang} value={lang}>
                 {lang}
@@ -105,7 +106,7 @@ export default function ReplyCard({
             {...register(
               `comments.${commentIndex}.replies.${replyIndex}.like_count`,
               {
-                setValueAs: (v) => (v === "" || isNaN(v) ? null : parseInt(v, 10)),
+                setValueAs: (v) => (v === "" || isNaN(v) ? 0 : parseInt(v, 10)),
               }
             )}
             className="form-input"

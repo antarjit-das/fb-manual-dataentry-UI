@@ -4,9 +4,11 @@
  * PostForm — Main hierarchical post-entry and editing form.
  *
  * Streamlined:
- *  - "+ Add Comment" moved to the bottom of Conversation Data
- *  - Removed shares count from Engagement Metrics
- *  - All fields are non-strict with sensible neutral defaults
+ *  - Primary language defaults to English
+ *  - All engagement and reaction count fields default to 0
+ *  - Published date formatted as DD/MM/YYYY
+ *  - Collection date dynamically reflects the current date in DD/MM/YYYY
+ *  - "+ Add Comment" at bottom of Conversation Data
  */
 
 import { useState } from "react";
@@ -41,18 +43,18 @@ export default function PostForm({
     source_type: "News Page",
     original_post_date: "",
     collection_date: todayDateStr(),
-    language: "Assamese",
+    language: "English",
     post_text: "",
-    view_count: null,
-    reaction_count: null,
-    like_count: null,
-    love_count: null,
-    haha_count: null,
-    angry_count: null,
-    sad_count: null,
-    wow_count: null,
-    care_count: null,
-    comment_count: null,
+    view_count: 0,
+    reaction_count: 0,
+    like_count: 0,
+    love_count: 0,
+    haha_count: 0,
+    angry_count: 0,
+    sad_count: 0,
+    wow_count: 0,
+    care_count: 0,
+    comment_count: 0,
     comments: [],
   };
 
@@ -81,9 +83,8 @@ export default function PostForm({
   const handleAddComment = () => {
     append({
       comment_text: "",
-      language: undefined,
-      like_count: null,
-      notes: "",
+      language: "English",
+      like_count: 0,
       replies: [],
     });
   };
@@ -209,7 +210,7 @@ export default function PostForm({
               type="text"
               {...register("original_post_date")}
               className="form-input"
-              placeholder="YYYY-MM-DD or relative string"
+              placeholder="DD/MM/YYYY"
             />
           </div>
         </div>
@@ -253,7 +254,7 @@ export default function PostForm({
         </div>
       </section>
 
-      {/* 4. Engagement Metrics */}
+      {/* 4. Engagement Metrics (Defaults to 0) */}
       <section className="form-section">
         <div className="form-section-title">
           <span>4. Engagement Counts</span>
@@ -264,7 +265,7 @@ export default function PostForm({
             <input
               type="number"
               min={0}
-              {...register("view_count", { setValueAs: (v) => v === "" || isNaN(v) ? null : parseInt(v, 10) })}
+              {...register("view_count", { setValueAs: (v) => (v === "" || isNaN(v) ? 0 : parseInt(v, 10)) })}
               className="form-input"
               placeholder="0"
             />
@@ -274,7 +275,7 @@ export default function PostForm({
             <input
               type="number"
               min={0}
-              {...register("reaction_count", { setValueAs: (v) => v === "" || isNaN(v) ? null : parseInt(v, 10) })}
+              {...register("reaction_count", { setValueAs: (v) => (v === "" || isNaN(v) ? 0 : parseInt(v, 10)) })}
               className="form-input"
               placeholder="0"
             />
@@ -284,7 +285,7 @@ export default function PostForm({
             <input
               type="number"
               min={0}
-              {...register("like_count", { setValueAs: (v) => v === "" || isNaN(v) ? null : parseInt(v, 10) })}
+              {...register("like_count", { setValueAs: (v) => (v === "" || isNaN(v) ? 0 : parseInt(v, 10)) })}
               className="form-input"
               placeholder="0"
             />
@@ -294,7 +295,7 @@ export default function PostForm({
             <input
               type="number"
               min={0}
-              {...register("love_count", { setValueAs: (v) => v === "" || isNaN(v) ? null : parseInt(v, 10) })}
+              {...register("love_count", { setValueAs: (v) => (v === "" || isNaN(v) ? 0 : parseInt(v, 10)) })}
               className="form-input"
               placeholder="0"
             />
@@ -304,7 +305,7 @@ export default function PostForm({
             <input
               type="number"
               min={0}
-              {...register("haha_count", { setValueAs: (v) => v === "" || isNaN(v) ? null : parseInt(v, 10) })}
+              {...register("haha_count", { setValueAs: (v) => (v === "" || isNaN(v) ? 0 : parseInt(v, 10)) })}
               className="form-input"
               placeholder="0"
             />
@@ -316,7 +317,7 @@ export default function PostForm({
             <input
               type="number"
               min={0}
-              {...register("angry_count", { setValueAs: (v) => v === "" || isNaN(v) ? null : parseInt(v, 10) })}
+              {...register("angry_count", { setValueAs: (v) => (v === "" || isNaN(v) ? 0 : parseInt(v, 10)) })}
               className="form-input"
               placeholder="0"
             />
@@ -326,7 +327,7 @@ export default function PostForm({
             <input
               type="number"
               min={0}
-              {...register("sad_count", { setValueAs: (v) => v === "" || isNaN(v) ? null : parseInt(v, 10) })}
+              {...register("sad_count", { setValueAs: (v) => (v === "" || isNaN(v) ? 0 : parseInt(v, 10)) })}
               className="form-input"
               placeholder="0"
             />
@@ -336,7 +337,7 @@ export default function PostForm({
             <input
               type="number"
               min={0}
-              {...register("wow_count", { setValueAs: (v) => v === "" || isNaN(v) ? null : parseInt(v, 10) })}
+              {...register("wow_count", { setValueAs: (v) => (v === "" || isNaN(v) ? 0 : parseInt(v, 10)) })}
               className="form-input"
               placeholder="0"
             />
@@ -346,7 +347,7 @@ export default function PostForm({
             <input
               type="number"
               min={0}
-              {...register("care_count", { setValueAs: (v) => v === "" || isNaN(v) ? null : parseInt(v, 10) })}
+              {...register("care_count", { setValueAs: (v) => (v === "" || isNaN(v) ? 0 : parseInt(v, 10)) })}
               className="form-input"
               placeholder="0"
             />
@@ -356,7 +357,7 @@ export default function PostForm({
             <input
               type="number"
               min={0}
-              {...register("comment_count", { setValueAs: (v) => v === "" || isNaN(v) ? null : parseInt(v, 10) })}
+              {...register("comment_count", { setValueAs: (v) => (v === "" || isNaN(v) ? 0 : parseInt(v, 10)) })}
               className="form-input"
               placeholder="0"
             />

@@ -5,7 +5,7 @@
  * and validation rules. All other layers (persistence, API, UI) import from here.
  *
  * Rules:
- *  - Lenient form validation: empty fields default to neutral/fallback values.
+ *  - Lenient form validation: empty metrics default to 0, language defaults to English.
  *  - Original text is stored unchanged — no trimming or transforming.
  */
 
@@ -27,8 +27,8 @@ export const SOURCE_TYPES = [
 ] as const;
 
 export const LANGUAGES = [
-  "Assamese",
   "English",
+  "Assamese",
   "Bengali",
   "Hindi",
   "Bodo",
@@ -80,7 +80,7 @@ const engagementCount = z
 /** Optional string — stored exactly as entered, never trimmed. */
 const optionalText = z.string().optional();
 
-/** Optional date string (ISO 8601 or blank). */
+/** Optional date string (DD/MM/YYYY or blank). */
 const optionalDateStr = z.string().optional();
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -97,12 +97,12 @@ export const PostSchema = z.object({
 
   // Source & dates
   source_name: z.string().default("Unknown Source"),
-  source_type: z.enum(SOURCE_TYPES).default("Other"),
+  source_type: z.enum(SOURCE_TYPES).default("News Page"),
   source_url: optionalText,
   original_post_date: optionalDateStr,
   collection_date: z.string().default(""),
   collection_timestamp: z.string().default(""),
-  language: z.enum(LANGUAGES).default("Assamese"),
+  language: z.enum(LANGUAGES).default("English"),
 
   // Classification (optional in stored sheet model)
   is_code_mixed: z.enum(YES_NO).optional(),
@@ -115,7 +115,7 @@ export const PostSchema = z.object({
   transcript: optionalText,
   media_description: optionalText,
 
-  // Engagement metrics — all optional non-negative integers
+  // Engagement metrics — all optional non-negative integers (defaulting to 0)
   view_count: engagementCount,
   reaction_count: engagementCount,
   like_count: engagementCount,
@@ -139,7 +139,7 @@ export const CommentSchema = z.object({
   post_id: z.string().regex(/^FB_\d{6}$/, "Must reference a valid post_id"),
   comment_text: z.string().default(""),
   comment_date: optionalDateStr,
-  language: z.enum(LANGUAGES).optional(),
+  language: z.enum(LANGUAGES).optional().default("English"),
   is_code_mixed: z.enum(YES_NO).optional(),
   like_count: engagementCount,
   reply_count: engagementCount,
@@ -160,7 +160,7 @@ export const ReplySchema = z.object({
   post_id: z.string().regex(/^FB_\d{6}$/, "Must reference a valid post_id"),
   reply_text: z.string().default(""),
   reply_date: optionalDateStr,
-  language: z.enum(LANGUAGES).optional(),
+  language: z.enum(LANGUAGES).optional().default("English"),
   is_code_mixed: z.enum(YES_NO).optional(),
   like_count: engagementCount,
   collection_timestamp: z.string().min(1, "Collection timestamp is required"),
@@ -174,7 +174,7 @@ export const ReplySchema = z.object({
 export const SourceSchema = z.object({
   source_id: z.string().regex(/^S_\d{6}$/, "Must match S_000000 format"),
   source_name: z.string().default("Unknown Source"),
-  source_type: z.enum(SOURCE_TYPES).default("Other"),
+  source_type: z.enum(SOURCE_TYPES).default("News Page"),
   source_url: optionalText,
 });
 
@@ -206,24 +206,23 @@ export const CollectionLogSchema = z.object({
 });
 
 // ────────────────────────────────────────────────────────────────────────────
-// FORM PAYLOAD — Lenient schemas with non-strict defaults
+// FORM PAYLOAD — Lenient schemas with default values
 // ────────────────────────────────────────────────────────────────────────────
 
 export const ReplyFormSchema = z.object({
   reply_id: z.string().optional(),
   reply_text: z.string().optional().default(""),
-  language: z.enum(LANGUAGES).optional(),
-  like_count: engagementCount,
+  language: z.enum(LANGUAGES).optional().default("English"),
+  like_count: engagementCount.default(0),
   collection_timestamp: optionalText,
 });
 
 export const CommentFormSchema = z.object({
   comment_id: z.string().optional(),
   comment_text: z.string().optional().default(""),
-  language: z.enum(LANGUAGES).optional(),
-  like_count: engagementCount,
+  language: z.enum(LANGUAGES).optional().default("English"),
+  like_count: engagementCount.default(0),
   collection_timestamp: optionalText,
-  notes: optionalText,
   replies: z.array(ReplyFormSchema).default([]),
 });
 
@@ -241,22 +240,22 @@ export const PostFormSchema = z.object({
   original_post_date: optionalDateStr,
   collection_date: z.string().optional(),
   collection_timestamp: optionalText,
-  language: z.enum(LANGUAGES).default("Assamese"),
+  language: z.enum(LANGUAGES).default("English"),
 
   // 3. Content
   post_text: optionalText,
 
-  // 4. Engagement metrics (share_count removed from form)
-  view_count: engagementCount,
-  reaction_count: engagementCount,
-  like_count: engagementCount,
-  love_count: engagementCount,
-  haha_count: engagementCount,
-  angry_count: engagementCount,
-  sad_count: engagementCount,
-  wow_count: engagementCount,
-  care_count: engagementCount,
-  comment_count: engagementCount,
+  // 4. Engagement metrics (defaults to 0)
+  view_count: engagementCount.default(0),
+  reaction_count: engagementCount.default(0),
+  like_count: engagementCount.default(0),
+  love_count: engagementCount.default(0),
+  haha_count: engagementCount.default(0),
+  angry_count: engagementCount.default(0),
+  sad_count: engagementCount.default(0),
+  wow_count: engagementCount.default(0),
+  care_count: engagementCount.default(0),
+  comment_count: engagementCount.default(0),
 
   // 5. Nested comments & replies
   comments: z.array(CommentFormSchema).default([]),

@@ -403,53 +403,46 @@ export async function getPost(postId: string): Promise<PostFormData | null> {
   // Nest replies under their parent comments
   const comments: CommentFormData[] = allComments.map((c) => ({
     comment_id: c.comment_id,
-    comment_text: c.comment_text,
-    comment_date: c.comment_date,
-    language: c.language,
-    is_code_mixed: c.is_code_mixed,
-    like_count: c.like_count,
-    reply_count: c.reply_count,
+    comment_text: c.comment_text || "",
+    language: c.language || "English",
+    like_count: c.like_count ?? 0,
     collection_timestamp: c.collection_timestamp,
-    notes: c.notes,
     replies: allReplies
       .filter((r) => r.comment_id === c.comment_id)
       .map((r) => ({
         reply_id: r.reply_id,
-        reply_text: r.reply_text,
-        reply_date: r.reply_date,
-        language: r.language,
-        is_code_mixed: r.is_code_mixed,
-        like_count: r.like_count,
+        reply_text: r.reply_text || "",
+        language: r.language || "English",
+        like_count: r.like_count ?? 0,
         collection_timestamp: r.collection_timestamp,
-        notes: r.notes,
       })),
   }));
 
-    // Return in PostFormData shape
-    return {
-      post_id: post.post_id,
-      platform: post.platform,
-      content_type: post.content_type,
-      post_url: post.post_url,
-      source_name: post.source_name,
-      source_type: post.source_type,
-      original_post_date: post.original_post_date,
-      collection_date: post.collection_date,
-      collection_timestamp: post.collection_timestamp,
-      language: post.language,
-      post_text: post.post_text,
-      view_count: post.view_count,
-      reaction_count: post.reaction_count,
-      like_count: post.like_count,
-      love_count: post.love_count,
-      haha_count: post.haha_count,
-      angry_count: post.angry_count,
-      sad_count: post.sad_count,
-      wow_count: post.wow_count,
-      care_count: post.care_count,
-      comment_count: post.comment_count,
-      comments,
-    };
+  // Return in PostFormData shape
+  return {
+    post_id: post.post_id,
+    platform: post.platform,
+    content_type: post.content_type,
+    post_url: post.post_url,
+    source_name: post.source_name,
+    source_type: post.source_type,
+    original_post_date: post.original_post_date,
+    collection_date: post.collection_date,
+    collection_timestamp: post.collection_timestamp,
+    language: post.language || "English",
+    post_text: post.post_text,
+    view_count: post.view_count ?? 0,
+    reaction_count: post.reaction_count ?? 0,
+    like_count: post.like_count ?? 0,
+    love_count: post.love_count ?? 0,
+    haha_count: post.haha_count ?? 0,
+    angry_count: post.angry_count ?? 0,
+    sad_count: post.sad_count ?? 0,
+    wow_count: post.wow_count ?? 0,
+    care_count: post.care_count ?? 0,
+    comment_count: post.comment_count ?? 0,
+    comments,
+  };
 }
 
 /**

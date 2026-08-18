@@ -21,41 +21,46 @@ export function parseEngagementCount(
   value: string | number | null | undefined
 ): number | null {
   if (value === null || value === undefined || value === "") {
-    return null;
+    return 0;
   }
 
   if (typeof value === "number") {
     if (!Number.isInteger(value) || value < 0) {
-      return null;
+      return 0;
     }
     return value;
   }
 
   const trimmed = value.trim();
-  if (trimmed === "") return null;
+  if (trimmed === "") return 0;
 
   if (!/^\d+$/.test(trimmed)) {
-    return null;
+    return 0;
   }
 
   const num = parseInt(trimmed, 10);
   if (isNaN(num) || num < 0) {
-    return null;
+    return 0;
   }
 
   return num;
 }
 
 // ────────────────────────────────────────────────────────────────────────────
-// Timestamp helpers
-// ───────────────────────────────────────────────────────────────────────────
+// Timestamp & Date helpers (DD/MM/YYYY support)
+// ────────────────────────────────────────────────────────────────────────────
 
 export function nowTimestamp(): string {
   return new Date().toISOString();
 }
 
+/** Returns today's date in DD/MM/YYYY format based on local time. */
 export function todayDateStr(): string {
-  return new Date().toISOString().split("T")[0];
+  const d = new Date();
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -145,7 +150,7 @@ export function preparePayload(
     original_post_date: formData.original_post_date,
     collection_date: formData.collection_date || collectionDate,
     collection_timestamp: formData.collection_timestamp || timestamp,
-    language: formData.language || "Assamese",
+    language: formData.language || "English",
     is_code_mixed: undefined,
     topic: undefined,
     subtopic: undefined,
@@ -153,17 +158,17 @@ export function preparePayload(
     post_text: formData.post_text,
     transcript: undefined,
     media_description: undefined,
-    view_count: formData.view_count ?? null,
-    reaction_count: formData.reaction_count ?? null,
-    like_count: formData.like_count ?? null,
-    love_count: formData.love_count ?? null,
-    haha_count: formData.haha_count ?? null,
-    angry_count: formData.angry_count ?? null,
-    sad_count: formData.sad_count ?? null,
-    wow_count: formData.wow_count ?? null,
-    care_count: formData.care_count ?? null,
-    share_count: null,
-    comment_count: formData.comment_count ?? null,
+    view_count: formData.view_count ?? 0,
+    reaction_count: formData.reaction_count ?? 0,
+    like_count: formData.like_count ?? 0,
+    love_count: formData.love_count ?? 0,
+    haha_count: formData.haha_count ?? 0,
+    angry_count: formData.angry_count ?? 0,
+    sad_count: formData.sad_count ?? 0,
+    wow_count: formData.wow_count ?? 0,
+    care_count: formData.care_count ?? 0,
+    share_count: 0,
+    comment_count: formData.comment_count ?? 0,
   };
 
   // ── Comment IDs ──────────────────────────────────────────────────────
@@ -208,12 +213,12 @@ export function preparePayload(
       post_id: postId,
       comment_text: commentForm.comment_text || "",
       comment_date: undefined,
-      language: commentForm.language,
+      language: commentForm.language || "English",
       is_code_mixed: undefined,
-      like_count: commentForm.like_count ?? null,
-      reply_count: null,
+      like_count: commentForm.like_count ?? 0,
+      reply_count: 0,
       collection_timestamp: commentForm.collection_timestamp || timestamp,
-      notes: commentForm.notes,
+      notes: undefined,
     });
 
     for (const replyForm of commentForm.replies) {
@@ -228,9 +233,9 @@ export function preparePayload(
         post_id: postId,
         reply_text: replyForm.reply_text || "",
         reply_date: undefined,
-        language: replyForm.language,
+        language: replyForm.language || "English",
         is_code_mixed: undefined,
-        like_count: replyForm.like_count ?? null,
+        like_count: replyForm.like_count ?? 0,
         collection_timestamp: replyForm.collection_timestamp || timestamp,
         notes: undefined,
       });

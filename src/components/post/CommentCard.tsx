@@ -4,7 +4,10 @@
  * CommentCard — Card for capturing top-level comment and its nested replies.
  *
  * Streamlined:
+ *  - Removed notes field
  *  - Removed date/time, code mixed, visible reply count
+ *  - Likes field defaults to 0
+ *  - Language defaults to English
  *  - Added "+ Add Reply" button to bottom of nested replies list
  */
 
@@ -53,8 +56,8 @@ export default function CommentCard({
   const handleAddReply = () => {
     append({
       reply_text: "",
-      language: undefined,
-      like_count: null,
+      language: "English",
+      like_count: 0,
     });
   };
 
@@ -94,8 +97,8 @@ export default function CommentCard({
           <select
             {...register(`comments.${commentIndex}.language`)}
             className="form-select"
+            defaultValue="English"
           >
-            <option value="">-- Language --</option>
             {LANGUAGES.map((lang) => (
               <option key={lang} value={lang}>
                 {lang}
@@ -110,22 +113,12 @@ export default function CommentCard({
             type="number"
             min={0}
             {...register(`comments.${commentIndex}.like_count`, {
-              setValueAs: (v) => (v === "" || isNaN(v) ? null : parseInt(v, 10)),
+              setValueAs: (v) => (v === "" || isNaN(v) ? 0 : parseInt(v, 10)),
             })}
             className="form-input"
             placeholder="0"
           />
         </div>
-      </div>
-
-      <div className="form-group">
-        <label className="form-label">Notes</label>
-        <input
-          type="text"
-          {...register(`comments.${commentIndex}.notes`)}
-          className="form-input"
-          placeholder="Optional notes..."
-        />
       </div>
 
       {/* Nested Replies Section */}
