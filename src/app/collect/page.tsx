@@ -3,8 +3,7 @@
 /**
  * /collect — Post collection workspace.
  *
- * Provides a dedicated view for entering a new post, with unsaved change
- * warnings and redirection to the dashboard upon successful save.
+ * Designed with a clean, dark-mode research workspace feel.
  */
 
 import { useEffect, useState } from "react";
@@ -36,23 +35,25 @@ export default function CollectPage() {
 
   return (
     <div>
-      <div className="flex-between mb-2">
+      <div className="flex-between mb-2" style={{ alignItems: "flex-start", flexWrap: "wrap", gap: "1rem" }}>
         <div>
           <h2>Insert New Post</h2>
-          <p className="text-muted" style={{ fontSize: "0.875rem" }}>
-            Enter post metadata, comments, and replies in a single workspace. IDs are assigned automatically on save.
+          <p className="text-secondary" style={{ fontSize: "0.8125rem", marginTop: "0.2rem" }}>
+            Capture post metadata, comments, and nested replies. IDs are generated and validated automatically on submission.
           </p>
         </div>
-        <Link href="/" className="btn btn-outline">
-          ← Back to Dashboard
+        <Link href="/" className="btn btn-secondary btn-sm">
+          ← Dashboard
         </Link>
       </div>
 
       {savedResult && (
-        <div className="card mb-2" style={{ borderLeft: "4px solid var(--color-success)" }}>
-          <div className="card-title text-success">Saved Successfully!</div>
-          <p style={{ marginTop: "0.5rem", fontSize: "0.875rem" }}>
-            Post <strong className="text-mono">{savedResult.postId}</strong> has been written to the workbook with {savedResult.commentsWritten} comment(s) and {savedResult.repliesWritten} reply/replies.
+        <div className="card mb-2" style={{ borderLeft: "3px solid var(--success-border)", backgroundColor: "var(--bg-surface-elevated)" }}>
+          <div style={{ fontSize: "0.95rem", fontWeight: 600, color: "var(--success-text)" }}>
+            Post Persisted Successfully
+          </div>
+          <p style={{ marginTop: "0.4rem", fontSize: "0.8125rem", color: "var(--text-secondary)" }}>
+            Record <strong className="text-mono text-primary">{savedResult.postId}</strong> was recorded into <span className="text-mono">facebook_dataset.xlsx</span> with {savedResult.commentsWritten} comment(s) and {savedResult.repliesWritten} reply/replies.
           </p>
           <div style={{ display: "flex", gap: "0.5rem", marginTop: "1rem" }}>
             <button
@@ -61,11 +62,11 @@ export default function CollectPage() {
                 setSavedResult(null);
                 window.location.reload();
               }}
-              className="btn btn-primary"
+              className="btn btn-primary btn-sm"
             >
               + Collect Another Post
             </button>
-            <Link href="/" className="btn btn-outline">
+            <Link href="/" className="btn btn-secondary btn-sm">
               Return to Dashboard
             </Link>
           </div>

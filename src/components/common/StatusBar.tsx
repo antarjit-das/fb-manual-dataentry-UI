@@ -3,10 +3,7 @@
 /**
  * StatusBar — Displays save status, errors, and loading states.
  *
- * Renders as an alert bar at the top of the form. Shows:
- *  - Success message with post ID and counts after save
- *  - Error message if save fails (form data is preserved)
- *  - Loading spinner during save
+ * Designed with restrained dark styling (muted greens, reds, and blues).
  */
 
 import type { SaveResult } from "@/lib/types";
@@ -23,7 +20,8 @@ export default function StatusBar({ status, result, error }: StatusBarProps) {
   if (status === "saving") {
     return (
       <div className="alert alert-info">
-        <span className="spinner" /> Saving to workbook...
+        <span className="spinner" />
+        <span>Saving changes to local Excel workbook...</span>
       </div>
     );
   }
@@ -31,11 +29,15 @@ export default function StatusBar({ status, result, error }: StatusBarProps) {
   if (status === "success" && result) {
     return (
       <div className="alert alert-success">
-        <strong>Saved successfully!</strong> Post{" "}
-        <span className="text-mono">{result.postId}</span> with{" "}
-        {result.commentsWritten} comment{result.commentsWritten !== 1 ? "s" : ""}{" "}
-        and {result.repliesWritten} repl{result.repliesWritten !== 1 ? "ies" : "y"}{" "}
-        written.
+        <div>
+          <strong>Saved successfully:</strong> Post{" "}
+          <span className="text-mono" style={{ textDecoration: "underline" }}>
+            {result.postId}
+          </span>{" "}
+          with {result.commentsWritten} comment{result.commentsWritten !== 1 ? "s" : ""}{" "}
+          and {result.repliesWritten} repl{result.repliesWritten !== 1 ? "ies" : "y"}{" "}
+          persisted.
+        </div>
       </div>
     );
   }
@@ -43,9 +45,12 @@ export default function StatusBar({ status, result, error }: StatusBarProps) {
   if (status === "error" && error) {
     return (
       <div className="alert alert-error">
-        <strong>Save failed.</strong> {error}
-        <br />
-        <small>Your form data has been preserved. Please try again.</small>
+        <div>
+          <strong>Save operation failed:</strong> {error}
+          <div style={{ fontSize: "0.75rem", marginTop: "0.2rem", color: "var(--text-secondary)" }}>
+            Your entered form data remains completely intact in memory. Please check fields and retry.
+          </div>
+        </div>
       </div>
     );
   }

@@ -3,11 +3,7 @@
 /**
  * Dashboard / Home Page (product_guide §4.1)
  *
- * Features:
- *  - Primary CTA: "+ Insert New Post"
- *  - Dataset summary cards: Posts, Comments, Replies, Last Saved
- *  - Recent records table: Post ID, Source, Content Type, Original Date, Comments, Replies, Saved At, Actions
- *  - Refresh button
+ * Minimalist dark design with clean typography and understated cards.
  */
 
 import { useState, useEffect } from "react";
@@ -55,7 +51,7 @@ export default function HomePage() {
   }, []);
 
   const formatLastSaved = (ts: string | null) => {
-    if (!ts) return "No records yet";
+    if (!ts) return "—";
     try {
       const d = new Date(ts);
       return d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -67,11 +63,11 @@ export default function HomePage() {
   return (
     <div>
       {/* Top Banner & Primary Action */}
-      <div className="flex-between mb-2">
+      <div className="flex-between mb-2" style={{ alignItems: "flex-start", flexWrap: "wrap", gap: "1rem" }}>
         <div>
-          <h2>Research Collection Dashboard</h2>
-          <p className="text-muted" style={{ fontSize: "0.875rem" }}>
-            Local-first Excel workbook persistence: <span className="text-mono">data/facebook_dataset.xlsx</span>
+          <h2>Research Collection Overview</h2>
+          <p className="text-secondary" style={{ fontSize: "0.8125rem", marginTop: "0.2rem" }}>
+            Local storage target: <span className="text-mono text-tertiary">data/facebook_dataset.xlsx</span>
           </p>
         </div>
         <div style={{ display: "flex", gap: "0.5rem" }}>
@@ -79,11 +75,11 @@ export default function HomePage() {
             type="button"
             onClick={fetchData}
             disabled={loading}
-            className="btn btn-outline"
+            className="btn btn-secondary btn-sm"
           >
             {loading ? "Refreshing..." : "↻ Refresh"}
           </button>
-          <Link href="/collect" className="btn btn-primary">
+          <Link href="/collect" className="btn btn-primary btn-sm">
             + Insert New Post
           </Link>
         </div>
@@ -91,54 +87,58 @@ export default function HomePage() {
 
       {error && (
         <div className="alert alert-error">
-          <strong>Error:</strong> {error}
+          <div>
+            <strong>Failed to synchronize:</strong> {error}
+          </div>
         </div>
       )}
 
       {/* Dataset Summary Cards */}
       <div className="summary-grid">
         <div className="summary-card">
-          <div className="count">{summary.postCount}</div>
           <div className="label">Total Posts / Reels</div>
+          <div className="count">{summary.postCount}</div>
         </div>
         <div className="summary-card">
-          <div className="count">{summary.commentCount}</div>
           <div className="label">Total Comments</div>
+          <div className="count">{summary.commentCount}</div>
         </div>
         <div className="summary-card">
-          <div className="count">{summary.replyCount}</div>
           <div className="label">Total Replies</div>
+          <div className="count">{summary.replyCount}</div>
         </div>
         <div className="summary-card">
-          <div className="count" style={{ fontSize: "1.15rem", paddingTop: "0.6rem" }}>
+          <div className="label">Last Persisted</div>
+          <div className="count-sub text-mono">
             {formatLastSaved(summary.lastSaved)}
           </div>
-          <div className="label">Last Saved Timestamp</div>
         </div>
       </div>
 
       {/* Recent Records Table */}
-      <div className="card">
-        <div className="card-header">
-          <div className="card-title">Collected Records ({posts.length})</div>
+      <div className="card" style={{ padding: "1rem 1.25rem" }}>
+        <div className="card-header" style={{ marginBottom: "0.75rem" }}>
+          <div className="card-title">
+            Persisted Records ({posts.length})
+          </div>
           {posts.length > 0 && (
-            <span className="text-muted" style={{ fontSize: "0.8125rem" }}>
-              Click &quot;Edit&quot; to inspect or update any post
+            <span className="text-tertiary" style={{ fontSize: "0.75rem" }}>
+              Click Edit to reopen and inspect
             </span>
           )}
         </div>
 
         {loading && posts.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "2rem" }}>
-            <span className="spinner" /> Loading dataset from Excel workbook...
+          <div style={{ textAlign: "center", padding: "2.5rem 1rem", color: "var(--text-tertiary)" }}>
+            <span className="spinner" style={{ marginRight: "0.5rem" }} /> Loading workbook data...
           </div>
         ) : posts.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "3rem 1rem" }}>
-            <p className="text-muted mb-2">
-              No posts collected yet in the dataset workbook.
+          <div style={{ textAlign: "center", padding: "3.5rem 1rem" }}>
+            <p className="text-tertiary mb-2" style={{ fontSize: "0.875rem" }}>
+              No Facebook records currently collected in the dataset.
             </p>
-            <Link href="/collect" className="btn btn-primary">
-              Start Collecting Your First Post
+            <Link href="/collect" className="btn btn-primary btn-sm">
+              Insert First Post Record
             </Link>
           </div>
         ) : (
@@ -146,38 +146,40 @@ export default function HomePage() {
             <table>
               <thead>
                 <tr>
-                  <th>Post ID</th>
-                  <th>Source</th>
-                  <th>Type</th>
+                  <th>Post Identifier</th>
+                  <th>Source / Page</th>
+                  <th>Content Type</th>
                   <th>Original Date</th>
                   <th>Comments</th>
                   <th>Replies</th>
-                  <th>Collected At</th>
-                  <th>Action</th>
+                  <th>Collection Date</th>
+                  <th style={{ textAlign: "right" }}>Action</th>
                 </tr>
               </thead>
               <tbody>
                 {posts.map((p) => (
                   <tr key={p.post_id}>
                     <td>
-                      <span className="text-mono" style={{ fontWeight: 600 }}>
+                      <span className="text-mono" style={{ fontWeight: 600, color: "var(--text-primary)" }}>
                         {p.post_id}
                       </span>
                     </td>
                     <td>{p.source_name}</td>
                     <td>
-                      <span className="text-muted">{p.content_type}</span>
-                    </td>
-                    <td>{p.original_post_date || "—"}</td>
-                    <td>{p.commentCount}</td>
-                    <td>{p.replyCount}</td>
-                    <td style={{ fontSize: "0.8125rem" }} className="text-muted">
-                      {formatLastSaved(p.collection_timestamp)}
+                      <span className="text-secondary">{p.content_type}</span>
                     </td>
                     <td>
+                      <span className="text-tertiary">{p.original_post_date || "—"}</span>
+                    </td>
+                    <td>{p.commentCount}</td>
+                    <td>{p.replyCount}</td>
+                    <td style={{ fontSize: "0.75rem" }} className="text-tertiary text-mono">
+                      {formatLastSaved(p.collection_timestamp)}
+                    </td>
+                    <td style={{ textAlign: "right" }}>
                       <Link
                         href={`/edit/${p.post_id}`}
-                        className="btn btn-outline btn-sm"
+                        className="btn btn-secondary btn-sm"
                       >
                         Edit
                       </Link>

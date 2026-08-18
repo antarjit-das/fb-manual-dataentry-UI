@@ -5,7 +5,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Facebook Data Collector",
   description:
-    "Local-first hierarchical data-entry tool for manual Facebook post, comment, and reply collection",
+    "Local-first hierarchical research data collector for Facebook posts, comments, and replies.",
 };
 
 export default function RootLayout({
@@ -17,21 +17,22 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <header className="app-header">
-          <div className="container">
-            <Link href="/" style={{ textDecoration: "none", color: "inherit" }}>
-              <h1>Facebook Data Collector</h1>
+          <div className="container header-inner">
+            <Link href="/" className="header-brand">
+              <span className="brand-badge">Research</span>
+              <span className="header-title">Facebook Data Collector</span>
             </Link>
-            <nav>
+            <nav className="header-nav">
               <Link href="/" className="btn btn-outline btn-sm">
                 Dashboard
               </Link>
               <Link href="/collect" className="btn btn-primary btn-sm">
-                + Insert New Post
+                + New Post
               </Link>
             </nav>
           </div>
         </header>
-        <main className="container" style={{ paddingBottom: "3rem" }}>
+        <main className="container" style={{ paddingBottom: "4rem", paddingTop: "1.75rem" }}>
           {children}
         </main>
       </body>

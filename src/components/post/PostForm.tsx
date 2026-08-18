@@ -3,14 +3,11 @@
 /**
  * PostForm — Main hierarchical post-entry and editing form.
  *
- * Organized in clean sections per product_guide §4.2:
- *  1. Identity & Post Details
- *  2. Source & Metadata
- *  3. Classification
- *  4. Content & Transcripts
- *  5. Visible Engagement Metrics
- *  6. Repeatable Comments & Replies
- *  7. Save & Pre-save summary
+ * Designed with a clean, ChatGPT-like dark UI philosophy:
+ *  - Discrete flat sections with subtle dividers
+ *  - Restrained typography and dark charcoal inputs
+ *  - Responsive multi-column layout
+ *  - Real-time pre-save validation status
  */
 
 import { useState } from "react";
@@ -73,7 +70,7 @@ export default function PostForm({
     control,
     handleSubmit,
     watch,
-    formState: { errors, isDirty },
+    formState: { errors },
   } = useForm<PostFormData>({
     resolver: zodResolver(PostFormSchema as any),
     defaultValues,
@@ -142,17 +139,18 @@ export default function PostForm({
 
       {/* 1. Identity & Post Details */}
       <section className="form-section">
-        <div className="form-section-title">1. Identity & Post Details</div>
+        <div className="form-section-title">
+          <span>1. Post Identification</span>
+        </div>
         <div className="form-row">
           {mode === "edit" && (
             <div className="form-group">
-              <label className="form-label">Post ID</label>
+              <label className="form-label">Post Identifier</label>
               <input
                 type="text"
                 {...register("post_id")}
                 readOnly
                 className="form-input text-mono"
-                style={{ backgroundColor: "var(--color-surface)" }}
               />
             </div>
           )}
@@ -164,7 +162,6 @@ export default function PostForm({
               {...register("platform")}
               readOnly
               className="form-input"
-              style={{ backgroundColor: "var(--color-surface)" }}
             />
           </div>
 
@@ -195,7 +192,9 @@ export default function PostForm({
 
       {/* 2. Source & Metadata */}
       <section className="form-section">
-        <div className="form-section-title">2. Source & Metadata</div>
+        <div className="form-section-title">
+          <span>2. Source & Origin</span>
+        </div>
         <div className="form-row">
           <div className="form-group">
             <label className="form-label">
@@ -226,7 +225,7 @@ export default function PostForm({
           </div>
 
           <div className="form-group">
-            <label className="form-label">Source URL</label>
+            <label className="form-label">Source Page URL</label>
             <input
               type="url"
               {...register("source_url")}
@@ -238,12 +237,12 @@ export default function PostForm({
 
         <div className="form-row">
           <div className="form-group">
-            <label className="form-label">Original Post Date</label>
+            <label className="form-label">Original Published Date</label>
             <input
               type="text"
               {...register("original_post_date")}
               className="form-input"
-              placeholder="YYYY-MM-DD or visible date"
+              placeholder="YYYY-MM-DD or relative string"
             />
           </div>
 
@@ -275,11 +274,13 @@ export default function PostForm({
 
       {/* 3. Classification */}
       <section className="form-section">
-        <div className="form-section-title">3. Research Classification</div>
+        <div className="form-section-title">
+          <span>3. Research Classification</span>
+        </div>
         <div className="form-row">
           <div className="form-group">
             <label className="form-label">
-              Is Code-Mixed? <span className="required">*</span>
+              Code-Mixed? <span className="required">*</span>
             </label>
             <select {...register("is_code_mixed")} className="form-select">
               {YES_NO.map((val) => (
@@ -296,7 +297,7 @@ export default function PostForm({
               type="text"
               {...register("topic")}
               className="form-input"
-              placeholder="e.g. Politics, Environment, Culture"
+              placeholder="e.g. Politics, Economy, Culture"
             />
           </div>
 
@@ -306,14 +307,14 @@ export default function PostForm({
               type="text"
               {...register("subtopic")}
               className="form-input"
-              placeholder="e.g. Floods, Elections"
+              placeholder="e.g. Elections, Infrastructure"
             />
           </div>
 
           <div className="form-group">
             <label className="form-label">Content Stance</label>
             <select {...register("content_stance")} className="form-select">
-              <option value="">-- None / Select Stance --</option>
+              <option value="">-- Stance --</option>
               {CONTENT_STANCES.map((stance) => (
                 <option key={stance} value={stance}>
                   {stance}
@@ -326,23 +327,25 @@ export default function PostForm({
 
       {/* 4. Content */}
       <section className="form-section">
-        <div className="form-section-title">4. Post Content</div>
+        <div className="form-section-title">
+          <span>4. Text & Content</span>
+        </div>
         <div className="form-group">
-          <label className="form-label">Post Text (Caption / Body)</label>
+          <label className="form-label">Post Caption / Body Text</label>
           <textarea
             {...register("post_text")}
             className="form-textarea"
-            placeholder="Paste raw post text/caption as-is..."
+            placeholder="Paste raw post text or caption exactly as published..."
             rows={4}
           />
         </div>
 
         <div className="form-group">
-          <label className="form-label">Transcript (for Reel / Video)</label>
+          <label className="form-label">Transcript (Video / Audio)</label>
           <textarea
             {...register("transcript")}
             className="form-textarea"
-            placeholder="Video or Reel transcript if applicable..."
+            placeholder="Video speech transcript or audio translation..."
             rows={3}
           />
         </div>
@@ -353,17 +356,19 @@ export default function PostForm({
             type="text"
             {...register("media_description")}
             className="form-input"
-            placeholder="e.g. Infographic with map, Photo of assembly"
+            placeholder="e.g. Infographic diagram, assembly photo, thumbnail"
           />
         </div>
       </section>
 
       {/* 5. Engagement Metrics */}
       <section className="form-section">
-        <div className="form-section-title">5. Visible Engagement Metrics</div>
+        <div className="form-section-title">
+          <span>5. Engagement Counts</span>
+        </div>
         <div className="form-row">
           <div className="form-group">
-            <label className="form-label">View Count</label>
+            <label className="form-label">Views</label>
             <input
               type="number"
               min={0}
@@ -465,7 +470,7 @@ export default function PostForm({
             />
           </div>
           <div className="form-group">
-            <label className="form-label">Visible Total Comments</label>
+            <label className="form-label">Total Visible Comments</label>
             <input
               type="number"
               min={0}
@@ -479,20 +484,20 @@ export default function PostForm({
 
       {/* 6. Comments & Nested Replies */}
       <section className="form-section">
-        <div className="flex-between form-section-title">
+        <div className="form-section-title">
           <span>6. Conversation Data ({fields.length} Comments, {totalReplies} Replies)</span>
           <button
             type="button"
             onClick={handleAddComment}
-            className="btn btn-primary btn-sm"
+            className="btn btn-secondary btn-sm"
           >
             + Add Comment
           </button>
         </div>
 
         {fields.length === 0 ? (
-          <div className="text-muted" style={{ padding: "1rem 0" }}>
-            No comments added yet. Click &quot;+ Add Comment&quot; to capture comments.
+          <div className="text-tertiary" style={{ padding: "1rem 0", fontSize: "0.8125rem" }}>
+            No comments added yet. Click &quot;+ Add Comment&quot; to capture top-level comments and replies.
           </div>
         ) : (
           fields.map((field, cIdx) => (
@@ -508,18 +513,26 @@ export default function PostForm({
         )}
       </section>
 
-      {/* 7. Save & Pre-save summary */}
-      <div className="save-summary flex-between">
-        <div>
-          <strong>Ready to save:</strong> 1 Post, {fields.length} Comment(s), {totalReplies} Reply/Replies.
+      {/* 7. Save & Pre-save summary bar */}
+      <div className="save-summary-bar">
+        <div className="save-summary-meta">
+          <strong>Payload Summary:</strong> 1 Post &middot; {fields.length} Comment(s) &middot; {totalReplies} Reply/Replies
         </div>
         <button
           type="submit"
           disabled={saveStatus === "saving"}
           className="btn btn-primary"
-          style={{ padding: "0.65rem 1.5rem", fontSize: "1rem" }}
+          style={{ padding: "0.55rem 1.4rem", fontSize: "0.875rem" }}
         >
-          {saveStatus === "saving" ? "Saving..." : mode === "edit" ? "Update Post" : "Save Complete Post"}
+          {saveStatus === "saving" ? (
+            <>
+              <span className="spinner" /> Saving...
+            </>
+          ) : mode === "edit" ? (
+            "Update Post Record"
+          ) : (
+            "Save Post to Dataset"
+          )}
         </button>
       </div>
     </form>

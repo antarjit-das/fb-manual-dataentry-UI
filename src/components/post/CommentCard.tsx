@@ -1,19 +1,7 @@
 "use client";
 
 /**
- * CommentCard — Card for entering a single top-level comment and its replies.
- *
- * Fields (product_guide §4.4):
- *  - comment_id (read-only generated or blank on create)
- *  - comment_text (required)
- *  - comment_date (optional)
- *  - language (optional dropdown)
- *  - is_code_mixed (optional dropdown)
- *  - like_count (optional integer)
- *  - reply_count (optional integer)
- *  - notes (optional)
- *  - Nested list of replies with Add Reply button
- *  - Remove Comment button with confirmation
+ * CommentCard — Card for capturing top-level comment and its nested replies.
  */
 
 import { Control, UseFormRegister, FieldErrors, useFieldArray, useWatch } from "react-hook-form";
@@ -71,11 +59,11 @@ export default function CommentCard({
 
   return (
     <div className="comment-card">
-      <div className="card-header">
-        <div className="card-title">
+      <div className="comment-card-header">
+        <div style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text-primary)" }}>
           Comment #{commentIndex + 1}
           {commentId && (
-            <span className="text-muted text-mono" style={{ marginLeft: "0.5rem" }}>
+            <span className="text-mono text-tertiary" style={{ marginLeft: "0.5rem" }}>
               ({commentId})
             </span>
           )}
@@ -96,7 +84,7 @@ export default function CommentCard({
         <textarea
           {...register(`comments.${commentIndex}.comment_text`)}
           className={`form-textarea ${commentErrors?.comment_text ? "error" : ""}`}
-          placeholder="Paste or type raw comment text here (stored unchanged)..."
+          placeholder="Paste or enter raw comment text..."
           rows={3}
         />
         {commentErrors?.comment_text && (
@@ -111,7 +99,7 @@ export default function CommentCard({
             type="text"
             {...register(`comments.${commentIndex}.comment_date`)}
             className="form-input"
-            placeholder="e.g. 2026-08-17 or 3h ago"
+            placeholder="e.g. 2026-08-17"
           />
         </div>
 
@@ -121,7 +109,7 @@ export default function CommentCard({
             {...register(`comments.${commentIndex}.language`)}
             className="form-select"
           >
-            <option value="">-- Select Language --</option>
+            <option value="">-- Language --</option>
             {LANGUAGES.map((lang) => (
               <option key={lang} value={lang}>
                 {lang}
@@ -146,7 +134,7 @@ export default function CommentCard({
         </div>
 
         <div className="form-group">
-          <label className="form-label">Like Count</label>
+          <label className="form-label">Likes</label>
           <input
             type="number"
             min={0}
@@ -154,7 +142,7 @@ export default function CommentCard({
               setValueAs: (v) => (v === "" || isNaN(v) ? null : parseInt(v, 10)),
             })}
             className="form-input"
-            placeholder="e.g. 10"
+            placeholder="0"
           />
         </div>
 
@@ -167,7 +155,7 @@ export default function CommentCard({
               setValueAs: (v) => (v === "" || isNaN(v) ? null : parseInt(v, 10)),
             })}
             className="form-input"
-            placeholder="e.g. 3"
+            placeholder="0"
           />
         </div>
       </div>
@@ -178,20 +166,20 @@ export default function CommentCard({
           type="text"
           {...register(`comments.${commentIndex}.notes`)}
           className="form-input"
-          placeholder="Optional researcher notes..."
+          placeholder="Optional notes..."
         />
       </div>
 
       {/* Nested Replies Section */}
-      <div className="mt-2" style={{ borderTop: "1px dashed var(--color-border)", paddingTop: "1rem" }}>
+      <div className="mt-2" style={{ borderTop: "1px solid var(--border-subtle)", paddingTop: "0.85rem" }}>
         <div className="flex-between mb-1">
-          <span style={{ fontSize: "0.875rem", fontWeight: 600 }}>
-            Replies ({fields.length})
+          <span style={{ fontSize: "0.75rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--text-tertiary)" }}>
+            Nested Replies ({fields.length})
           </span>
           <button
             type="button"
             onClick={handleAddReply}
-            className="btn btn-outline btn-sm"
+            className="btn btn-secondary btn-sm"
           >
             + Add Reply
           </button>

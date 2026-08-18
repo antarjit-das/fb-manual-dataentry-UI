@@ -1,17 +1,9 @@
 "use client";
 
 /**
- * ReplyCard — Card for entering a single reply nested under a comment.
+ * ReplyCard — Nested reply entry card.
  *
- * Fields (product_guide §4.5):
- *  - reply_id (read-only generated or empty on create)
- *  - reply_text (required)
- *  - reply_date (optional)
- *  - language (optional dropdown)
- *  - is_code_mixed (optional dropdown)
- *  - like_count (optional integer)
- *  - notes (optional)
- *  - Remove Reply button with confirmation
+ * Clean, minimalistic dark appearance with subtle left border indicator.
  */
 
 import { Control, UseFormRegister, FieldErrors, useWatch } from "react-hook-form";
@@ -46,7 +38,7 @@ export default function ReplyCard({
   const handleRemove = () => {
     if (
       window.confirm(
-        `Are you sure you want to remove Reply ${replyIndex + 1}?`
+        `Are you sure you want to remove Reply #${replyIndex + 1}?`
       )
     ) {
       onRemove();
@@ -55,11 +47,11 @@ export default function ReplyCard({
 
   return (
     <div className="reply-card">
-      <div className="card-header">
-        <div className="card-title">
+      <div className="reply-card-header">
+        <div style={{ fontSize: "0.8125rem", fontWeight: 500, color: "var(--text-secondary)" }}>
           ↳ Reply #{replyIndex + 1}
           {replyId && (
-            <span className="text-muted text-mono" style={{ marginLeft: "0.5rem" }}>
+            <span className="text-mono text-tertiary" style={{ marginLeft: "0.4rem" }}>
               ({replyId})
             </span>
           )}
@@ -69,7 +61,7 @@ export default function ReplyCard({
           onClick={handleRemove}
           className="btn btn-danger btn-sm"
         >
-          Remove Reply
+          Remove
         </button>
       </div>
 
@@ -82,7 +74,7 @@ export default function ReplyCard({
             `comments.${commentIndex}.replies.${replyIndex}.reply_text`
           )}
           className={`form-textarea ${replyErrors?.reply_text ? "error" : ""}`}
-          placeholder="Paste or type raw reply text here (stored unchanged)..."
+          placeholder="Enter raw reply text..."
           rows={2}
         />
         {replyErrors?.reply_text && (
@@ -99,7 +91,7 @@ export default function ReplyCard({
               `comments.${commentIndex}.replies.${replyIndex}.reply_date`
             )}
             className="form-input"
-            placeholder="e.g. 2026-08-17 or 2h ago"
+            placeholder="e.g. 2026-08-17"
           />
         </div>
 
@@ -111,7 +103,7 @@ export default function ReplyCard({
             )}
             className="form-select"
           >
-            <option value="">-- Select Language --</option>
+            <option value="">-- Language --</option>
             {LANGUAGES.map((lang) => (
               <option key={lang} value={lang}>
                 {lang}
@@ -138,7 +130,7 @@ export default function ReplyCard({
         </div>
 
         <div className="form-group">
-          <label className="form-label">Like Count</label>
+          <label className="form-label">Likes</label>
           <input
             type="number"
             min={0}
@@ -149,12 +141,12 @@ export default function ReplyCard({
               }
             )}
             className="form-input"
-            placeholder="e.g. 5"
+            placeholder="0"
           />
         </div>
       </div>
 
-      <div className="form-group mb-1">
+      <div className="form-group" style={{ marginBottom: "0.25rem" }}>
         <label className="form-label">Notes</label>
         <input
           type="text"
@@ -162,7 +154,7 @@ export default function ReplyCard({
             `comments.${commentIndex}.replies.${replyIndex}.notes`
           )}
           className="form-input"
-          placeholder="Optional researcher notes..."
+          placeholder="Optional notes..."
         />
       </div>
     </div>

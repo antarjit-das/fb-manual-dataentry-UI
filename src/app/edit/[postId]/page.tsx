@@ -3,8 +3,7 @@
 /**
  * /edit/[postId] — Edit/Reopen existing post record.
  *
- * Fetches the post with all its comments and replies from the Excel workbook,
- * fills PostForm with initialData, and submits via PUT to update in-place.
+ * Designed with a clean, dark-mode research workspace feel.
  */
 
 import { use, useEffect, useState } from "react";
@@ -54,45 +53,49 @@ export default function EditPostPage({
 
   return (
     <div>
-      <div className="flex-between mb-2">
+      <div className="flex-between mb-2" style={{ alignItems: "flex-start", flexWrap: "wrap", gap: "1rem" }}>
         <div>
           <h2>
-            Edit Post: <span className="text-mono">{postId}</span>
+            Edit Record: <span className="text-mono" style={{ color: "var(--accent-text)" }}>{postId}</span>
           </h2>
-          <p className="text-muted" style={{ fontSize: "0.875rem" }}>
-            Reopen collected records, modify metadata, or add additional comments/replies safely.
+          <p className="text-secondary" style={{ fontSize: "0.8125rem", marginTop: "0.2rem" }}>
+            Reopen collected records, modify metadata, or append additional comments and replies.
           </p>
         </div>
-        <Link href="/" className="btn btn-outline">
-          ← Back to Dashboard
+        <Link href="/" className="btn btn-secondary btn-sm">
+          ← Dashboard
         </Link>
       </div>
 
       {loading && (
-        <div style={{ textAlign: "center", padding: "3rem" }}>
-          <span className="spinner" /> Loading record <span className="text-mono">{postId}</span>...
+        <div style={{ textAlign: "center", padding: "3.5rem 1rem", color: "var(--text-tertiary)" }}>
+          <span className="spinner" style={{ marginRight: "0.5rem" }} /> Loading record <span className="text-mono">{postId}</span> from workbook...
         </div>
       )}
 
       {error && (
         <div className="alert alert-error">
-          <strong>Error:</strong> {error}
-          <div style={{ marginTop: "0.5rem" }}>
-            <Link href="/" className="btn btn-outline btn-sm">
-              Return to Dashboard
-            </Link>
+          <div>
+            <strong>Error loading record:</strong> {error}
+            <div style={{ marginTop: "0.5rem" }}>
+              <Link href="/" className="btn btn-secondary btn-sm">
+                Return to Dashboard
+              </Link>
+            </div>
           </div>
         </div>
       )}
 
       {savedResult && (
-        <div className="card mb-2" style={{ borderLeft: "4px solid var(--color-success)" }}>
-          <div className="card-title text-success">Updated Successfully!</div>
-          <p style={{ marginTop: "0.5rem", fontSize: "0.875rem" }}>
-            Post <strong className="text-mono">{savedResult.postId}</strong> was updated in the workbook with {savedResult.commentsWritten} comment(s) and {savedResult.repliesWritten} reply/replies.
+        <div className="card mb-2" style={{ borderLeft: "3px solid var(--success-border)", backgroundColor: "var(--bg-surface-elevated)" }}>
+          <div style={{ fontSize: "0.95rem", fontWeight: 600, color: "var(--success-text)" }}>
+            Post Updated Successfully
+          </div>
+          <p style={{ marginTop: "0.4rem", fontSize: "0.8125rem", color: "var(--text-secondary)" }}>
+            Record <strong className="text-mono text-primary">{savedResult.postId}</strong> has been updated in the dataset with {savedResult.commentsWritten} comment(s) and {savedResult.repliesWritten} reply/replies.
           </p>
           <div style={{ display: "flex", gap: "0.5rem", marginTop: "1rem" }}>
-            <Link href="/" className="btn btn-primary">
+            <Link href="/" className="btn btn-primary btn-sm">
               Return to Dashboard
             </Link>
             <button
@@ -101,7 +104,7 @@ export default function EditPostPage({
                 setSavedResult(null);
                 window.location.reload();
               }}
-              className="btn btn-outline"
+              className="btn btn-secondary btn-sm"
             >
               Continue Editing
             </button>
