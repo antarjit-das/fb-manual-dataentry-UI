@@ -62,7 +62,6 @@ export const COMMENT_COLUMNS = [
   "post_id",
   "commenter_name",
   "comment_text",
-  "comment_date",
   "like_count",
   "love_count",
   "haha_count",
@@ -72,7 +71,6 @@ export const COMMENT_COLUMNS = [
   "care_count",
   "reply_count",
   "collection_timestamp",
-  "notes",
 ] as const;
 
 export const REPLY_COLUMNS = [
@@ -81,7 +79,6 @@ export const REPLY_COLUMNS = [
   "post_id",
   "commenter_name",
   "reply_text",
-  "reply_date",
   "like_count",
   "love_count",
   "haha_count",
@@ -90,7 +87,6 @@ export const REPLY_COLUMNS = [
   "angry_count",
   "care_count",
   "collection_timestamp",
-  "notes",
 ] as const;
 
 export const SOURCE_COLUMNS = [
@@ -165,7 +161,6 @@ export const CODEBOOK_ROWS: string[][] = [
   ["post_id", "COMMENTS", "string", "Yes", "FB_NNNNNN", "Foreign key to POSTS.post_id"],
   ["commenter_name", "COMMENTS", "string", "No", "", "Name or display handle of the commenter"],
   ["comment_text", "COMMENTS", "string", "Yes", "", "Full text of the comment (stored as-is)"],
-  ["comment_date", "COMMENTS", "date", "No", "", "Date/time of the comment"],
   ["like_count", "COMMENTS", "integer", "No", "", "Number of likes on the comment"],
   ["love_count", "COMMENTS", "integer", "No", "", "Number of love reactions on the comment"],
   ["haha_count", "COMMENTS", "integer", "No", "", "Number of haha reactions on the comment"],
@@ -175,7 +170,6 @@ export const CODEBOOK_ROWS: string[][] = [
   ["care_count", "COMMENTS", "integer", "No", "", "Number of care reactions on the comment"],
   ["reply_count", "COMMENTS", "integer", "No", "", "Number of visible replies"],
   ["collection_timestamp", "COMMENTS", "datetime", "Yes", "", "ISO 8601 timestamp of collection"],
-  ["notes", "COMMENTS", "string", "No", "", "Researcher notes"],
 
   // REPLIES fields
   ["reply_id", "REPLIES", "string", "Yes", "R_NNNNNN", "Unique reply identifier, auto-generated"],
@@ -183,7 +177,6 @@ export const CODEBOOK_ROWS: string[][] = [
   ["post_id", "REPLIES", "string", "Yes", "FB_NNNNNN", "Foreign key to POSTS.post_id"],
   ["commenter_name", "REPLIES", "string", "No", "", "Name or display handle of the replier"],
   ["reply_text", "REPLIES", "string", "Yes", "", "Full text of the reply (stored as-is)"],
-  ["reply_date", "REPLIES", "date", "No", "", "Date/time of the reply"],
   ["like_count", "REPLIES", "integer", "No", "", "Number of likes on the reply"],
   ["love_count", "REPLIES", "integer", "No", "", "Number of love reactions on the reply"],
   ["haha_count", "REPLIES", "integer", "No", "", "Number of haha reactions on the reply"],
@@ -192,7 +185,6 @@ export const CODEBOOK_ROWS: string[][] = [
   ["angry_count", "REPLIES", "integer", "No", "", "Number of angry reactions on the reply"],
   ["care_count", "REPLIES", "integer", "No", "", "Number of care reactions on the reply"],
   ["collection_timestamp", "REPLIES", "datetime", "Yes", "", "ISO 8601 timestamp of collection"],
-  ["notes", "REPLIES", "string", "No", "", "Researcher notes"],
 
   // SOURCES fields
   ["source_id", "SOURCES", "string", "Yes", "S_NNNNNN", "Unique source identifier, auto-generated"],

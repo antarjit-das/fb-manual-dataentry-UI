@@ -175,7 +175,6 @@ function processRecursiveReplies(
       post_id: postId,
       commenter_name: rForm.commenter_name || undefined,
       reply_text: rForm.reply_text || "",
-      reply_date: undefined,
       like_count: rForm.like_count ?? null,
       love_count: rForm.love_count ?? null,
       haha_count: rForm.haha_count ?? null,
@@ -184,7 +183,6 @@ function processRecursiveReplies(
       angry_count: rForm.angry_count ?? null,
       care_count: rForm.care_count ?? null,
       collection_timestamp: rForm.collection_timestamp || timestamp,
-      notes: undefined,
     });
 
     // Recursively process any nested children
@@ -284,7 +282,6 @@ export function preparePayload(
       post_id: postId,
       commenter_name: commentForm.commenter_name || undefined,
       comment_text: commentForm.comment_text || "",
-      comment_date: undefined,
       like_count: commentForm.like_count ?? null,
       love_count: commentForm.love_count ?? null,
       haha_count: commentForm.haha_count ?? null,
@@ -294,7 +291,6 @@ export function preparePayload(
       care_count: commentForm.care_count ?? null,
       reply_count: countTotalDescendantReplies(commentForm.replies),
       collection_timestamp: commentForm.collection_timestamp || timestamp,
-      notes: undefined,
     });
 
     // Recursively process all replies under this comment

@@ -146,7 +146,6 @@ export const CommentSchema = z.object({
   post_id: z.string().regex(/^FB_\d{6}$/, "Must reference a valid post_id"),
   commenter_name: optionalText,
   comment_text: z.string().default(""),
-  comment_date: optionalDateStr,
   like_count: engagementCount,
   love_count: engagementCount,
   haha_count: engagementCount,
@@ -156,7 +155,6 @@ export const CommentSchema = z.object({
   care_count: engagementCount,
   reply_count: engagementCount,
   collection_timestamp: z.string().min(1, "Collection timestamp is required"),
-  notes: optionalText,
 });
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -172,7 +170,6 @@ export const ReplySchema = z.object({
   post_id: z.string().regex(/^FB_\d{6}$/, "Must reference a valid post_id"),
   commenter_name: optionalText,
   reply_text: z.string().default(""),
-  reply_date: optionalDateStr,
   like_count: engagementCount,
   love_count: engagementCount,
   haha_count: engagementCount,
@@ -181,7 +178,6 @@ export const ReplySchema = z.object({
   angry_count: engagementCount,
   care_count: engagementCount,
   collection_timestamp: z.string().min(1, "Collection timestamp is required"),
-  notes: optionalText,
 });
 
 // ────────────────────────────────────────────────────────────────────────────

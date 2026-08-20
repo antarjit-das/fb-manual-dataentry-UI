@@ -132,7 +132,6 @@ export function rowToComment(row: Record<string, unknown>): Comment {
     post_id: String(row.post_id ?? ""),
     commenter_name: cellToString(row.commenter_name),
     comment_text: String(row.comment_text ?? ""),
-    comment_date: cellToString(row.comment_date),
     like_count: cellToNumber(row.like_count),
     love_count: cellToNumber(row.love_count),
     haha_count: cellToNumber(row.haha_count),
@@ -142,7 +141,6 @@ export function rowToComment(row: Record<string, unknown>): Comment {
     care_count: cellToNumber(row.care_count),
     reply_count: cellToNumber(row.reply_count),
     collection_timestamp: String(row.collection_timestamp ?? ""),
-    notes: cellToString(row.notes),
   };
 }
 
@@ -165,7 +163,6 @@ export function rowToReply(row: Record<string, unknown>): Reply {
     post_id: String(row.post_id ?? ""),
     commenter_name: cellToString(row.commenter_name),
     reply_text: String(row.reply_text ?? ""),
-    reply_date: cellToString(row.reply_date),
     like_count: cellToNumber(row.like_count),
     love_count: cellToNumber(row.love_count),
     haha_count: cellToNumber(row.haha_count),
@@ -174,7 +171,6 @@ export function rowToReply(row: Record<string, unknown>): Reply {
     angry_count: cellToNumber(row.angry_count),
     care_count: cellToNumber(row.care_count),
     collection_timestamp: String(row.collection_timestamp ?? ""),
-    notes: cellToString(row.notes),
   };
 }
 
