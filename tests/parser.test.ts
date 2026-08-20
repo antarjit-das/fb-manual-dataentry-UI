@@ -21,7 +21,7 @@ import {
   segmentBlocks,
 } from "../src/lib/parser.ts";
 import { preparePayload, validateRelationships } from "../src/lib/domain.ts";
-import { postToRow, rowToPost } from "../src/lib/workbook/mappers.ts";
+import { postToRow, rowToPost, commentToRow, rowToComment, replyToRow, rowToReply } from "../src/lib/workbook/mappers.ts";
 import type { CanonicalDataset, PostFormData, CommentFormData, ReplyFormData } from "../src/lib/types.ts";
 
 describe("PART 12: Comprehensive Test Suite for Recursive Tree & 7 Reactions", () => {
@@ -438,7 +438,7 @@ describe("PART 12: Comprehensive Test Suite for Recursive Tree & 7 Reactions", (
     for (const c of prepared.comments) {
       commentNodes.set(c.comment_id, {
         comment_id: c.comment_id,
-        commenter_name: "",
+        commenter_name: c.commenter_name || "",
         comment_text: c.comment_text,
         like_count: c.like_count,
         love_count: c.love_count,
@@ -814,5 +814,27 @@ describe("PART 15: Post-Level Count Precision System (Test Cases A through J)", 
     assert.equal(restoredPost.reaction_count_precision, "precise");
     assert.equal(restoredPost.comment_count, null);
     assert.equal(restoredPost.comment_count_precision, "unavailable");
+
+    // 4. Verify comment row conversion preserves commenter_name
+    const commentRow = commentToRow(prepared.comments[0]);
+    const commentRecord: Record<string, unknown> = {
+      comment_id: prepared.comments[0].comment_id,
+      post_id: prepared.comments[0].post_id,
+      commenter_name: prepared.comments[0].commenter_name,
+      comment_text: prepared.comments[0].comment_text,
+      like_count: prepared.comments[0].like_count,
+      love_count: prepared.comments[0].love_count,
+      haha_count: prepared.comments[0].haha_count,
+      wow_count: prepared.comments[0].wow_count,
+      sad_count: prepared.comments[0].sad_count,
+      angry_count: prepared.comments[0].angry_count,
+      care_count: prepared.comments[0].care_count,
+      reply_count: prepared.comments[0].reply_count,
+      collection_timestamp: prepared.comments[0].collection_timestamp,
+    };
+    const restoredComment = rowToComment(commentRecord);
+    assert.equal(restoredComment.commenter_name, "Commenter");
+    assert.equal(restoredComment.comment_text, "Comment body");
+    assert.equal(restoredComment.like_count, 10);
   });
 });

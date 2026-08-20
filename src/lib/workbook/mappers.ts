@@ -137,6 +137,7 @@ export function rowToComment(row: Record<string, unknown>): Comment {
   return {
     comment_id: String(row.comment_id ?? ""),
     post_id: String(row.post_id ?? ""),
+    commenter_name: cellToString(row.commenter_name),
     comment_text: String(row.comment_text ?? ""),
     comment_date: cellToString(row.comment_date),
     is_code_mixed: cellToString(row.is_code_mixed) as Comment["is_code_mixed"],
@@ -170,6 +171,7 @@ export function rowToReply(row: Record<string, unknown>): Reply {
     reply_id: String(row.reply_id ?? ""),
     parent_id: String(row.parent_id ?? row.comment_id ?? ""),
     post_id: String(row.post_id ?? ""),
+    commenter_name: cellToString(row.commenter_name),
     reply_text: String(row.reply_text ?? ""),
     reply_date: cellToString(row.reply_date),
     is_code_mixed: cellToString(row.is_code_mixed) as Reply["is_code_mixed"],

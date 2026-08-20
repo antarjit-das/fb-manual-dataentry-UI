@@ -163,6 +163,7 @@ export const PostSchema = z.object({
 export const CommentSchema = z.object({
   comment_id: z.string().regex(/^C_\d{6}$/, "Must match C_000000 format"),
   post_id: z.string().regex(/^FB_\d{6}$/, "Must reference a valid post_id"),
+  commenter_name: optionalText,
   comment_text: z.string().default(""),
   comment_date: optionalDateStr,
   is_code_mixed: z.enum(YES_NO).optional(),
@@ -189,6 +190,7 @@ export const ReplySchema = z.object({
     .string()
     .regex(/^(C|R)_\d{6}$/, "Must reference a valid parent comment or reply ID"),
   post_id: z.string().regex(/^FB_\d{6}$/, "Must reference a valid post_id"),
+  commenter_name: optionalText,
   reply_text: z.string().default(""),
   reply_date: optionalDateStr,
   is_code_mixed: z.enum(YES_NO).optional(),

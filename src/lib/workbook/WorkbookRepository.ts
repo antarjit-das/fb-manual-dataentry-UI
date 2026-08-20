@@ -407,7 +407,7 @@ export async function getPost(postId: string): Promise<PostFormData | null> {
     const parentId = r.parent_id || (r as any).comment_id || "";
     replyNodes.set(r.reply_id, {
       reply_id: r.reply_id,
-      commenter_name: "",
+      commenter_name: r.commenter_name || "",
       reply_text: r.reply_text || "",
       like_count: r.like_count ?? null,
       love_count: r.love_count ?? null,
@@ -426,7 +426,7 @@ export async function getPost(postId: string): Promise<PostFormData | null> {
   for (const c of allComments) {
     commentNodes.set(c.comment_id, {
       comment_id: c.comment_id,
-      commenter_name: "",
+      commenter_name: c.commenter_name || "",
       comment_text: c.comment_text || "",
       like_count: c.like_count ?? null,
       love_count: c.love_count ?? null,

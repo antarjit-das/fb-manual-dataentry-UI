@@ -173,6 +173,7 @@ function processRecursiveReplies(
       reply_id: replyId,
       parent_id: parentId,
       post_id: postId,
+      commenter_name: rForm.commenter_name || undefined,
       reply_text: rForm.reply_text || "",
       reply_date: undefined,
       is_code_mixed: undefined,
@@ -289,6 +290,7 @@ export function preparePayload(
     comments.push({
       comment_id: commentId,
       post_id: postId,
+      commenter_name: commentForm.commenter_name || undefined,
       comment_text: commentForm.comment_text || "",
       comment_date: undefined,
       is_code_mixed: undefined,

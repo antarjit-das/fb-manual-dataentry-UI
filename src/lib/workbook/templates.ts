@@ -67,6 +67,7 @@ export const POST_COLUMNS = [
 export const COMMENT_COLUMNS = [
   "comment_id",
   "post_id",
+  "commenter_name",
   "comment_text",
   "comment_date",
   "is_code_mixed",
@@ -86,6 +87,7 @@ export const REPLY_COLUMNS = [
   "reply_id",
   "parent_id",
   "post_id",
+  "commenter_name",
   "reply_text",
   "reply_date",
   "is_code_mixed",
@@ -178,6 +180,7 @@ export const CODEBOOK_ROWS: string[][] = [
   // COMMENTS fields
   ["comment_id", "COMMENTS", "string", "Yes", "C_NNNNNN", "Unique comment identifier, auto-generated"],
   ["post_id", "COMMENTS", "string", "Yes", "FB_NNNNNN", "Foreign key to POSTS.post_id"],
+  ["commenter_name", "COMMENTS", "string", "No", "", "Name or display handle of the commenter"],
   ["comment_text", "COMMENTS", "string", "Yes", "", "Full text of the comment (stored as-is)"],
   ["comment_date", "COMMENTS", "date", "No", "", "Date/time of the comment"],
   ["is_code_mixed", "COMMENTS", "string", "No", "Yes; No", "Whether comment contains code-mixing"],
@@ -196,6 +199,7 @@ export const CODEBOOK_ROWS: string[][] = [
   ["reply_id", "REPLIES", "string", "Yes", "R_NNNNNN", "Unique reply identifier, auto-generated"],
   ["parent_id", "REPLIES", "string", "Yes", "C_NNNNNN; R_NNNNNN", "Foreign key to parent COMMENTS.comment_id or REPLIES.reply_id"],
   ["post_id", "REPLIES", "string", "Yes", "FB_NNNNNN", "Foreign key to POSTS.post_id"],
+  ["commenter_name", "REPLIES", "string", "No", "", "Name or display handle of the replier"],
   ["reply_text", "REPLIES", "string", "Yes", "", "Full text of the reply (stored as-is)"],
   ["reply_date", "REPLIES", "date", "No", "", "Date/time of the reply"],
   ["is_code_mixed", "REPLIES", "string", "No", "Yes; No", "Whether reply contains code-mixing"],
