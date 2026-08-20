@@ -72,16 +72,28 @@ export const CONFIDENCE_LEVELS = [1, 2, 3, 4, 5] as const;
 // Shared field schemas
 // ────────────────────────────────────────────────────────────────────────────
 
-/** Non-negative integer or null. */
-const engagementCount = z
-  .union([z.number().int().min(0), z.null()])
-  .optional();
+/** Non-negative integer or null. Preprocesses strings, commas, empty values, 'null', etc. */
+const engagementCount = z.preprocess((val) => {
+  if (val === undefined || val === null || val === "" || val === "null" || val === "NA" || val === "N/A") {
+    return null;
+  }
+  if (typeof val === "string") {
+    const cleaned = val.replace(/,/g, "").trim();
+    if (cleaned === "" || cleaned.toLowerCase() === "null" || cleaned.toUpperCase() === "NA") return null;
+    const num = Number(cleaned);
+    return isNaN(num) ? val : Math.round(num);
+  }
+  if (typeof val === "number") {
+    return isNaN(val) ? null : Math.round(val);
+  }
+  return val;
+}, z.union([z.number().int().min(0), z.null()]).optional());
 
 /** Optional string — stored exactly as entered, never trimmed. */
-const optionalText = z.string().optional();
+const optionalText = z.string().nullable().optional();
 
 /** Optional date string (DD/MM/YYYY or blank). */
-const optionalDateStr = z.string().optional();
+const optionalDateStr = z.string().nullable().optional();
 
 // ────────────────────────────────────────────────────────────────────────────
 // POST schema
@@ -277,8 +289,8 @@ export function languageToIso(lang?: string | null): string {
 // ────────────────────────────────────────────────────────────────────────────
 
 export type CanonicalReply = {
-  commenter_name: string;
-  reply_text: string;
+  commenter_name?: string | null;
+  reply_text?: string | null;
   like_count?: number | null;
   love_count?: number | null;
   haha_count?: number | null;
@@ -291,8 +303,8 @@ export type CanonicalReply = {
 
 export const CanonicalReplySchema: z.ZodType<CanonicalReply> = z.lazy(() =>
   z.object({
-    commenter_name: z.string().min(1, "commenter_name is required"),
-    reply_text: z.string().min(1, "reply_text is required"),
+    commenter_name: z.union([z.string(), z.null()]).optional().transform((v) => v ?? ""),
+    reply_text: z.union([z.string(), z.null()]).optional().transform((v) => v ?? ""),
     like_count: engagementCount,
     love_count: engagementCount,
     haha_count: engagementCount,
@@ -305,8 +317,8 @@ export const CanonicalReplySchema: z.ZodType<CanonicalReply> = z.lazy(() =>
 );
 
 export const CanonicalCommentSchema = z.object({
-  commenter_name: z.string().min(1, "commenter_name is required"),
-  comment_text: z.string().min(1, "comment_text is required"),
+  commenter_name: z.union([z.string(), z.null()]).optional().transform((v) => v ?? ""),
+  comment_text: z.union([z.string(), z.null()]).optional().transform((v) => v ?? ""),
   like_count: engagementCount,
   love_count: engagementCount,
   haha_count: engagementCount,
@@ -327,8 +339,8 @@ export const CanonicalDatasetSchema = z.object({
 
 export type ReplyFormData = {
   reply_id?: string;
-  commenter_name: string;
-  reply_text: string;
+  commenter_name?: string | null;
+  reply_text?: string | null;
   like_count?: number | null;
   love_count?: number | null;
   haha_count?: number | null;
@@ -336,15 +348,15 @@ export type ReplyFormData = {
   sad_count?: number | null;
   angry_count?: number | null;
   care_count?: number | null;
-  collection_timestamp?: string;
+  collection_timestamp?: string | null;
   replies?: ReplyFormData[];
 };
 
 export const ReplyFormSchema: z.ZodType<ReplyFormData> = z.lazy(() =>
   z.object({
     reply_id: z.string().optional(),
-    commenter_name: z.string().optional().default(""),
-    reply_text: z.string().optional().default(""),
+    commenter_name: z.union([z.string(), z.null()]).optional().default(""),
+    reply_text: z.union([z.string(), z.null()]).optional().default(""),
     like_count: engagementCount,
     love_count: engagementCount,
     haha_count: engagementCount,
@@ -359,8 +371,8 @@ export const ReplyFormSchema: z.ZodType<ReplyFormData> = z.lazy(() =>
 
 export const CommentFormSchema = z.object({
   comment_id: z.string().optional(),
-  commenter_name: z.string().optional().default(""),
-  comment_text: z.string().optional().default(""),
+  commenter_name: z.union([z.string(), z.null()]).optional().default(""),
+  comment_text: z.union([z.string(), z.null()]).optional().default(""),
   like_count: engagementCount,
   love_count: engagementCount,
   haha_count: engagementCount,

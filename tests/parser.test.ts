@@ -528,6 +528,51 @@ describe("PART 12: Comprehensive Test Suite for Recursive Tree & 7 Reactions", (
     assert.equal(initialTree.replies![0].replies!.length, 1);
     assert.equal(initialTree.replies![0].replies![0].commenter_name, "R3");
   });
+
+  // TEST 14: Null comment_text, reply_text, commenter_name and string numbers
+  it("TEST 14: Accepts null comment_text, null reply_text, null commenter_name and string numbers", () => {
+    const payloadWithNulls = {
+      comments: [
+        {
+          commenter_name: null,
+          comment_text: null,
+          like_count: "15",
+          love_count: "0",
+          haha_count: null,
+          wow_count: "",
+          sad_count: "null",
+          angry_count: 0,
+          care_count: 0,
+          replies: [
+            {
+              commenter_name: null,
+              reply_text: null,
+              like_count: "2",
+              love_count: null,
+              haha_count: "0",
+              wow_count: 0,
+              sad_count: 0,
+              angry_count: 0,
+              care_count: 0,
+              replies: [],
+            },
+          ],
+        },
+      ],
+    };
+
+    const parsed = CanonicalDatasetSchema.safeParse(payloadWithNulls);
+    assert.equal(parsed.success, true);
+    if (parsed.success) {
+      assert.equal(parsed.data.comments[0].comment_text, "");
+      assert.equal(parsed.data.comments[0].commenter_name, "");
+      assert.equal(parsed.data.comments[0].like_count, 15);
+      assert.equal(parsed.data.comments[0].love_count, 0);
+      assert.equal(parsed.data.comments[0].sad_count, null);
+      assert.equal(parsed.data.comments[0].replies![0].reply_text, "");
+      assert.equal(parsed.data.comments[0].replies![0].like_count, 2);
+    }
+  });
 });
 
 describe("Raw Facebook Text Parser Compatibility", () => {

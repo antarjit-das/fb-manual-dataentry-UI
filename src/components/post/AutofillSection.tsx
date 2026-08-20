@@ -39,8 +39,8 @@ export default function AutofillSection({ onAutofill }: AutofillSectionProps) {
   // JSON -> Form Mapping
   // ──────────────────────────────────────────────────────────────────────────
   const mapCanonicalReply = (r: CanonicalReply): ReplyFormData => ({
-    commenter_name: r.commenter_name,
-    reply_text: r.reply_text,
+    commenter_name: r.commenter_name ?? "",
+    reply_text: r.reply_text ?? "",
     like_count: r.like_count !== undefined ? r.like_count : 0,
     love_count: r.love_count !== undefined ? r.love_count : 0,
     haha_count: r.haha_count !== undefined ? r.haha_count : 0,
@@ -53,8 +53,8 @@ export default function AutofillSection({ onAutofill }: AutofillSectionProps) {
 
   const mapCanonicalToForm = (dataset: CanonicalDataset): CommentFormData[] => {
     return dataset.comments.map((c) => ({
-      commenter_name: c.commenter_name,
-      comment_text: c.comment_text,
+      commenter_name: c.commenter_name ?? "",
+      comment_text: c.comment_text ?? "",
       like_count: c.like_count !== undefined ? c.like_count : 0,
       love_count: c.love_count !== undefined ? c.love_count : 0,
       haha_count: c.haha_count !== undefined ? c.haha_count : 0,

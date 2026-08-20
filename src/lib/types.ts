@@ -104,7 +104,7 @@ export interface PostSummaryRow {
   post_id: string;
   source_name: string;
   content_type: string;
-  original_post_date: string | undefined;
+  original_post_date: string | null | undefined;
   commentCount: number;
   replyCount: number;
   collection_timestamp: string;
