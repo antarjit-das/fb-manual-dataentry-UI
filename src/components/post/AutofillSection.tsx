@@ -312,7 +312,7 @@ export default function AutofillSection({ onAutofill }: AutofillSectionProps) {
                   rows={6}
                   value={jsonText}
                   onChange={(e) => setJsonText(e.target.value)}
-                  placeholder={`{\n  "comments": [\n    {\n      "commenter_name": "Gopal Ch Saha",\n      "comment_text": "...",\n      "like_count": 0,\n      "love_count": 0,\n      "haha_count": 0,\n      "wow_count": 0,\n      "sad_count": 0,\n      "angry_count": 0,\n      "care_count": 0,\n      "replies": [\n        {\n          "commenter_name": "Chandrani Sarkar",\n          "reply_text": "Gopal Ch Saha ...",\n          "like_count": 0,\n          "love_count": 0,\n          "haha_count": 0,\n          "wow_count": 0,\n          "sad_count": 0,\n          "angry_count": 0,\n          "care_count": 0,\n          "replies": []\n        }\n      ]\n    }\n  ]\n}`}
+                  placeholder={`{\n  "comments": [\n    {\n      "commenter_name": "Sugma Dic",\n      "comment_text": "...",\n      "like_count": 0,\n      "love_count": 0,\n      "haha_count": 0,\n      "wow_count": 0,\n      "sad_count": 0,\n      "angry_count": 0,\n      "care_count": 0,\n      "replies": [\n        {\n          "commenter_name": "Ligma Balls",\n          "reply_text": "Sugma Dic",\n          "like_count": 0,\n          "love_count": 0,\n          "haha_count": 0,\n          "wow_count": 0,\n          "sad_count": 0,\n          "angry_count": 0,\n          "care_count": 0,\n          "replies": []\n        }\n      ]\n    }\n  ]\n}`}
                   style={{ fontSize: "0.8125rem" }}
                 />
               </div>
