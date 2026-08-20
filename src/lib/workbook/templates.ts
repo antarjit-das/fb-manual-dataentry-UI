@@ -33,7 +33,6 @@ export const POST_COLUMNS = [
   "post_url",
   "source_name",
   "source_type",
-  "source_url",
   "original_post_date",
   "collection_date",
   "collection_timestamp",
@@ -106,7 +105,6 @@ export const SOURCE_COLUMNS = [
   "source_id",
   "source_name",
   "source_type",
-  "source_url",
 ] as const;
 
 export const ANNOTATION_COLUMNS = [
@@ -147,7 +145,6 @@ export const CODEBOOK_ROWS: string[][] = [
   ["post_url", "POSTS", "string", "No", "", "URL of the original post"],
   ["source_name", "POSTS", "string", "Yes", "", "Name of the Facebook page or profile"],
   ["source_type", "POSTS", "string", "Yes", "News Page; Public Figure; Political Page; Organization; Community Page; Other", "Category of the source"],
-  ["source_url", "POSTS", "string", "No", "", "URL of the source page/profile"],
   ["original_post_date", "POSTS", "date", "No", "", "Date the post was originally published"],
   ["collection_date", "POSTS", "date", "Yes", "", "Date the data was collected"],
   ["collection_timestamp", "POSTS", "datetime", "Yes", "", "ISO 8601 timestamp of collection"],
@@ -217,7 +214,6 @@ export const CODEBOOK_ROWS: string[][] = [
   ["source_id", "SOURCES", "string", "Yes", "S_NNNNNN", "Unique source identifier, auto-generated"],
   ["source_name", "SOURCES", "string", "Yes", "", "Name of the source page/profile"],
   ["source_type", "SOURCES", "string", "Yes", "News Page; Public Figure; Political Page; Organization; Community Page; Other", "Category of the source"],
-  ["source_url", "SOURCES", "string", "No", "", "URL of the source page/profile"],
 
   // ANNOTATIONS fields
   ["annotation_id", "ANNOTATIONS", "string", "Yes", "A_NNNNNN", "Unique annotation identifier"],

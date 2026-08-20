@@ -548,7 +548,6 @@ export async function savePost(formData: PostFormData): Promise<SaveResult> {
       source_id: sourceId,
       source_name: post.source_name,
       source_type: post.source_type,
-      source_url: post.source_url,
     };
     sourcesWs.addRow(sourceToRow(source));
   }
@@ -690,7 +689,6 @@ export async function updatePost(formData: PostFormData): Promise<SaveResult> {
       source_id: sourceId,
       source_name: post.source_name,
       source_type: post.source_type,
-      source_url: post.source_url,
     };
     sourcesWs.addRow(sourceToRow(source));
   }

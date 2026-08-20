@@ -89,7 +89,6 @@ export function rowToPost(row: Record<string, unknown>): Post {
     post_url: cellToString(row.post_url),
     source_name: String(row.source_name ?? ""),
     source_type: String(row.source_type ?? "Other") as Post["source_type"],
-    source_url: cellToString(row.source_url),
     original_post_date: cellToString(row.original_post_date),
     collection_date: String(row.collection_date ?? ""),
     collection_timestamp: String(row.collection_timestamp ?? ""),
@@ -204,7 +203,6 @@ export function rowToSource(row: Record<string, unknown>): Source {
     source_id: String(row.source_id ?? ""),
     source_name: String(row.source_name ?? ""),
     source_type: String(row.source_type ?? "Other") as Source["source_type"],
-    source_url: cellToString(row.source_url),
   };
 }
 

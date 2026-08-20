@@ -118,7 +118,6 @@ export const PostSchema = z.object({
   // Source & dates
   source_name: z.string().default("Unknown Source"),
   source_type: z.enum(SOURCE_TYPES).default("News Page"),
-  source_url: optionalText,
   original_post_date: optionalDateStr,
   collection_date: z.string().default(""),
   collection_timestamp: z.string().default(""),
@@ -213,7 +212,6 @@ export const SourceSchema = z.object({
   source_id: z.string().regex(/^S_\d{6}$/, "Must match S_000000 format"),
   source_name: z.string().default("Unknown Source"),
   source_type: z.enum(SOURCE_TYPES).default("News Page"),
-  source_url: optionalText,
 });
 
 // ────────────────────────────────────────────────────────────────────────────

@@ -224,7 +224,6 @@ export function preparePayload(
     post_url: formData.post_url,
     source_name: formData.source_name || "Unknown Source",
     source_type: formData.source_type || "News Page",
-    source_url: undefined,
     original_post_date: formData.original_post_date,
     collection_date: formData.collection_date || collectionDate,
     collection_timestamp: formData.collection_timestamp || timestamp,
