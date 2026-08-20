@@ -9,13 +9,13 @@
  *  - Do not silently add or remove fields.
  */
 
-import type { Post, Comment, Reply, Source } from "../types";
+import type { Post, Comment, Reply, Source } from "../types.ts";
 import {
   POST_COLUMNS,
   COMMENT_COLUMNS,
   REPLY_COLUMNS,
   SOURCE_COLUMNS,
-} from "./templates";
+} from "./templates.ts";
 
 // ────────────────────────────────────────────────────────────────────────────
 // Generic helpers
@@ -51,10 +51,37 @@ export function postToRow(post: Post): unknown[] {
   });
 }
 
+function parsePrecision(
+  precisionVal: unknown,
+  countVal: number | null,
+  displayVal?: string
+): Post["view_count_precision"] {
+  if (precisionVal === "precise" || precisionVal === "approximate" || precisionVal === "unavailable") {
+    return precisionVal;
+  }
+  if (countVal === null || countVal === undefined) {
+    return "unavailable";
+  }
+  if (displayVal && /[kmb]/i.test(displayVal)) {
+    return "approximate";
+  }
+  if (displayVal && /^\d+$/.test(displayVal.replace(/,/g, ""))) {
+    return "precise";
+  }
+  return "unavailable";
+}
+
 /**
  * Convert an Excel row (as key-value record) back into a Post domain object.
  */
 export function rowToPost(row: Record<string, unknown>): Post {
+  const viewCount = cellToNumber(row.view_count);
+  const viewDisplay = cellToString(row.view_count_display);
+  const reactionCount = cellToNumber(row.reaction_count);
+  const reactionDisplay = cellToString(row.reaction_count_display);
+  const commentCount = cellToNumber(row.comment_count);
+  const commentDisplay = cellToString(row.comment_count_display);
+
   return {
     post_id: String(row.post_id ?? ""),
     platform: String(row.platform ?? "Facebook"),
@@ -74,8 +101,12 @@ export function rowToPost(row: Record<string, unknown>): Post {
     post_text: cellToString(row.post_text),
     transcript: cellToString(row.transcript),
     media_description: cellToString(row.media_description),
-    view_count: cellToNumber(row.view_count),
-    reaction_count: cellToNumber(row.reaction_count),
+    view_count: viewCount,
+    view_count_display: viewDisplay,
+    view_count_precision: parsePrecision(row.view_count_precision, viewCount, viewDisplay),
+    reaction_count: reactionCount,
+    reaction_count_display: reactionDisplay,
+    reaction_count_precision: parsePrecision(row.reaction_count_precision, reactionCount, reactionDisplay),
     like_count: cellToNumber(row.like_count),
     love_count: cellToNumber(row.love_count),
     haha_count: cellToNumber(row.haha_count),
@@ -84,7 +115,9 @@ export function rowToPost(row: Record<string, unknown>): Post {
     wow_count: cellToNumber(row.wow_count),
     care_count: cellToNumber(row.care_count),
     share_count: cellToNumber(row.share_count),
-    comment_count: cellToNumber(row.comment_count),
+    comment_count: commentCount,
+    comment_count_display: commentDisplay,
+    comment_count_precision: parsePrecision(row.comment_count_precision, commentCount, commentDisplay),
   };
 }
 

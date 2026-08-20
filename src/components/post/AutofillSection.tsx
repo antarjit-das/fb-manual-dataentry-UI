@@ -41,13 +41,13 @@ export default function AutofillSection({ onAutofill }: AutofillSectionProps) {
   const mapCanonicalReply = (r: CanonicalReply): ReplyFormData => ({
     commenter_name: r.commenter_name ?? "",
     reply_text: r.reply_text ?? "",
-    like_count: r.like_count !== undefined ? r.like_count : 0,
-    love_count: r.love_count !== undefined ? r.love_count : 0,
-    haha_count: r.haha_count !== undefined ? r.haha_count : 0,
-    wow_count: r.wow_count !== undefined ? r.wow_count : 0,
-    sad_count: r.sad_count !== undefined ? r.sad_count : 0,
-    angry_count: r.angry_count !== undefined ? r.angry_count : 0,
-    care_count: r.care_count !== undefined ? r.care_count : 0,
+    like_count: r.like_count === undefined ? null : r.like_count,
+    love_count: r.love_count === undefined ? null : r.love_count,
+    haha_count: r.haha_count === undefined ? null : r.haha_count,
+    wow_count: r.wow_count === undefined ? null : r.wow_count,
+    sad_count: r.sad_count === undefined ? null : r.sad_count,
+    angry_count: r.angry_count === undefined ? null : r.angry_count,
+    care_count: r.care_count === undefined ? null : r.care_count,
     replies: (r.replies || []).map(mapCanonicalReply),
   });
 
@@ -55,13 +55,13 @@ export default function AutofillSection({ onAutofill }: AutofillSectionProps) {
     return dataset.comments.map((c) => ({
       commenter_name: c.commenter_name ?? "",
       comment_text: c.comment_text ?? "",
-      like_count: c.like_count !== undefined ? c.like_count : 0,
-      love_count: c.love_count !== undefined ? c.love_count : 0,
-      haha_count: c.haha_count !== undefined ? c.haha_count : 0,
-      wow_count: c.wow_count !== undefined ? c.wow_count : 0,
-      sad_count: c.sad_count !== undefined ? c.sad_count : 0,
-      angry_count: c.angry_count !== undefined ? c.angry_count : 0,
-      care_count: c.care_count !== undefined ? c.care_count : 0,
+      like_count: c.like_count === undefined ? null : c.like_count,
+      love_count: c.love_count === undefined ? null : c.love_count,
+      haha_count: c.haha_count === undefined ? null : c.haha_count,
+      wow_count: c.wow_count === undefined ? null : c.wow_count,
+      sad_count: c.sad_count === undefined ? null : c.sad_count,
+      angry_count: c.angry_count === undefined ? null : c.angry_count,
+      care_count: c.care_count === undefined ? null : c.care_count,
       replies: (c.replies || []).map(mapCanonicalReply),
     }));
   };

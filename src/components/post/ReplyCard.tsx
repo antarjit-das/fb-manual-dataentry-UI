@@ -46,7 +46,9 @@ export default function ReplyCard({
 
   const [showReactions, setShowReactions] = useState(false);
 
-  const totalReactions = [like, love, haha, wow, sad, angry, care].reduce<number>(
+  const reactionList = [like, love, haha, wow, sad, angry, care];
+  const hasAnyReaction = reactionList.some((val) => typeof val === "number");
+  const totalReactions = reactionList.reduce<number>(
     (sum, val) => sum + (typeof val === "number" ? val : 0),
     0
   );
@@ -66,13 +68,13 @@ export default function ReplyCard({
     append({
       commenter_name: "",
       reply_text: "",
-      like_count: 0,
-      love_count: 0,
-      haha_count: 0,
-      wow_count: 0,
-      sad_count: 0,
-      angry_count: 0,
-      care_count: 0,
+      like_count: null,
+      love_count: null,
+      haha_count: null,
+      wow_count: null,
+      sad_count: null,
+      angry_count: null,
+      care_count: null,
       replies: [],
     });
   };
@@ -104,7 +106,7 @@ export default function ReplyCard({
               marginLeft: "0.5rem",
             }}
           >
-            Total Reactions: {totalReactions}
+            Total Reactions: {hasAnyReaction ? totalReactions : "—"}
           </span>
         </div>
         <button
@@ -171,7 +173,7 @@ export default function ReplyCard({
                   setValueAs: (v) => (v === "" || v === null || isNaN(v) ? null : parseInt(v, 10)),
                 })}
                 className="form-input"
-                placeholder="0"
+                placeholder="—"
                 style={{ fontSize: "0.75rem", padding: "0.25rem 0.4rem" }}
               />
             </div>
@@ -184,7 +186,7 @@ export default function ReplyCard({
                   setValueAs: (v) => (v === "" || v === null || isNaN(v) ? null : parseInt(v, 10)),
                 })}
                 className="form-input"
-                placeholder="0"
+                placeholder="—"
                 style={{ fontSize: "0.75rem", padding: "0.25rem 0.4rem" }}
               />
             </div>
@@ -197,7 +199,7 @@ export default function ReplyCard({
                   setValueAs: (v) => (v === "" || v === null || isNaN(v) ? null : parseInt(v, 10)),
                 })}
                 className="form-input"
-                placeholder="0"
+                placeholder="—"
                 style={{ fontSize: "0.75rem", padding: "0.25rem 0.4rem" }}
               />
             </div>
@@ -210,7 +212,7 @@ export default function ReplyCard({
                   setValueAs: (v) => (v === "" || v === null || isNaN(v) ? null : parseInt(v, 10)),
                 })}
                 className="form-input"
-                placeholder="0"
+                placeholder="—"
                 style={{ fontSize: "0.75rem", padding: "0.25rem 0.4rem" }}
               />
             </div>
@@ -223,7 +225,7 @@ export default function ReplyCard({
                   setValueAs: (v) => (v === "" || v === null || isNaN(v) ? null : parseInt(v, 10)),
                 })}
                 className="form-input"
-                placeholder="0"
+                placeholder="—"
                 style={{ fontSize: "0.75rem", padding: "0.25rem 0.4rem" }}
               />
             </div>
@@ -236,7 +238,7 @@ export default function ReplyCard({
                   setValueAs: (v) => (v === "" || v === null || isNaN(v) ? null : parseInt(v, 10)),
                 })}
                 className="form-input"
-                placeholder="0"
+                placeholder="—"
                 style={{ fontSize: "0.75rem", padding: "0.25rem 0.4rem" }}
               />
             </div>
@@ -249,7 +251,7 @@ export default function ReplyCard({
                   setValueAs: (v) => (v === "" || v === null || isNaN(v) ? null : parseInt(v, 10)),
                 })}
                 className="form-input"
-                placeholder="0"
+                placeholder="—"
                 style={{ fontSize: "0.75rem", padding: "0.25rem 0.4rem" }}
               />
             </div>

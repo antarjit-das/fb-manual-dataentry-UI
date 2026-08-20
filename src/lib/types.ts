@@ -21,7 +21,12 @@ import {
   CanonicalDatasetSchema,
   type CanonicalReply,
   type ReplyFormData,
+  type CountPrecision,
+  PRECISION_TYPES,
 } from "./schemas.ts";
+
+export type { CountPrecision };
+export { PRECISION_TYPES };
 
 // ────────────────────────────────────────────────────────────────────────────
 // Canonical JSON schema types (Contract for external JSON & Parser output)

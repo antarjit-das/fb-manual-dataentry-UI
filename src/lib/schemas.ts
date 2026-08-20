@@ -68,6 +68,14 @@ export const EMOTIONS = [
 
 export const CONFIDENCE_LEVELS = [1, 2, 3, 4, 5] as const;
 
+export const PRECISION_TYPES = [
+  "precise",
+  "approximate",
+  "unavailable",
+] as const;
+
+export type CountPrecision = (typeof PRECISION_TYPES)[number];
+
 // ────────────────────────────────────────────────────────────────────────────
 // Shared field schemas
 // ────────────────────────────────────────────────────────────────────────────
@@ -127,9 +135,13 @@ export const PostSchema = z.object({
   transcript: optionalText,
   media_description: optionalText,
 
-  // Engagement metrics — all optional non-negative integers (defaulting to 0)
+  // Engagement metrics & Post-Level Precision
   view_count: engagementCount,
+  view_count_display: optionalText,
+  view_count_precision: z.enum(PRECISION_TYPES).default("unavailable"),
   reaction_count: engagementCount,
+  reaction_count_display: optionalText,
+  reaction_count_precision: z.enum(PRECISION_TYPES).default("unavailable"),
   like_count: engagementCount,
   love_count: engagementCount,
   haha_count: engagementCount,
@@ -139,6 +151,8 @@ export const PostSchema = z.object({
   care_count: engagementCount,
   share_count: engagementCount,
   comment_count: engagementCount,
+  comment_count_display: optionalText,
+  comment_count_precision: z.enum(PRECISION_TYPES).default("unavailable"),
 });
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -403,9 +417,13 @@ export const PostFormSchema = z.object({
   // 3. Content
   post_text: optionalText,
 
-  // 4. Engagement metrics (defaults to 0)
-  view_count: engagementCount.default(0),
-  reaction_count: engagementCount.default(0),
+  // 4. Engagement metrics
+  view_count: engagementCount,
+  view_count_display: optionalText,
+  view_count_precision: z.enum(PRECISION_TYPES).default("unavailable"),
+  reaction_count: engagementCount,
+  reaction_count_display: optionalText,
+  reaction_count_precision: z.enum(PRECISION_TYPES).default("unavailable"),
   like_count: engagementCount.default(0),
   love_count: engagementCount.default(0),
   haha_count: engagementCount.default(0),
@@ -413,7 +431,9 @@ export const PostFormSchema = z.object({
   sad_count: engagementCount.default(0),
   wow_count: engagementCount.default(0),
   care_count: engagementCount.default(0),
-  comment_count: engagementCount.default(0),
+  comment_count: engagementCount,
+  comment_count_display: optionalText,
+  comment_count_precision: z.enum(PRECISION_TYPES).default("unavailable"),
 
   // 5. Nested comments & replies
   comments: z.array(CommentFormSchema).default([]),

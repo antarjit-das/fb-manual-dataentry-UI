@@ -46,7 +46,11 @@ export const POST_COLUMNS = [
   "transcript",
   "media_description",
   "view_count",
+  "view_count_display",
+  "view_count_precision",
   "reaction_count",
+  "reaction_count_display",
+  "reaction_count_precision",
   "like_count",
   "love_count",
   "haha_count",
@@ -56,6 +60,8 @@ export const POST_COLUMNS = [
   "care_count",
   "share_count",
   "comment_count",
+  "comment_count_display",
+  "comment_count_precision",
 ] as const;
 
 export const COMMENT_COLUMNS = [
@@ -152,7 +158,11 @@ export const CODEBOOK_ROWS: string[][] = [
   ["transcript", "POSTS", "string", "No", "", "Transcript of video/reel content"],
   ["media_description", "POSTS", "string", "No", "", "Description of media attachments"],
   ["view_count", "POSTS", "integer", "No", "", "Number of views"],
+  ["view_count_display", "POSTS", "string", "No", "", "Original raw view count string as displayed on Facebook (e.g. 1.1K, 1,247)"],
+  ["view_count_precision", "POSTS", "string", "No", "precise; approximate; unavailable", "Precision status of view count"],
   ["reaction_count", "POSTS", "integer", "No", "", "Total reaction count"],
+  ["reaction_count_display", "POSTS", "string", "No", "", "Original raw reaction count string as displayed on Facebook"],
+  ["reaction_count_precision", "POSTS", "string", "No", "precise; approximate; unavailable", "Precision status of post total reaction count"],
   ["like_count", "POSTS", "integer", "No", "", "Number of likes"],
   ["love_count", "POSTS", "integer", "No", "", "Number of love reactions"],
   ["haha_count", "POSTS", "integer", "No", "", "Number of haha reactions"],
@@ -162,6 +172,8 @@ export const CODEBOOK_ROWS: string[][] = [
   ["care_count", "POSTS", "integer", "No", "", "Number of care reactions"],
   ["share_count", "POSTS", "integer", "No", "", "Number of shares"],
   ["comment_count", "POSTS", "integer", "No", "", "Number of comments visible"],
+  ["comment_count_display", "POSTS", "string", "No", "", "Original raw comment count string as displayed on Facebook"],
+  ["comment_count_precision", "POSTS", "string", "No", "precise; approximate; unavailable", "Precision status of post total comment count"],
 
   // COMMENTS fields
   ["comment_id", "COMMENTS", "string", "Yes", "C_NNNNNN", "Unique comment identifier, auto-generated"],

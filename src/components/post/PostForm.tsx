@@ -12,11 +12,12 @@
  */
 
 import { useState } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PostFormSchema, CONTENT_TYPES, SOURCE_TYPES, LANGUAGES } from "@/lib/schemas";
 import type { PostFormData, SaveResult, CommentFormData } from "@/lib/types";
 import { todayDateStr } from "@/lib/domain";
+import { parseCountWithPrecision } from "@/lib/parser";
 import StatusBar from "@/components/common/StatusBar";
 import CommentCard from "./CommentCard";
 import AutofillSection from "./AutofillSection";
@@ -46,8 +47,12 @@ export default function PostForm({
     collection_date: todayDateStr(),
     language: "English",
     post_text: "",
-    view_count: 0,
-    reaction_count: 0,
+    view_count: null,
+    view_count_display: "",
+    view_count_precision: "unavailable",
+    reaction_count: null,
+    reaction_count_display: "",
+    reaction_count_precision: "unavailable",
     like_count: 0,
     love_count: 0,
     haha_count: 0,
@@ -55,7 +60,9 @@ export default function PostForm({
     sad_count: 0,
     wow_count: 0,
     care_count: 0,
-    comment_count: 0,
+    comment_count: null,
+    comment_count_display: "",
+    comment_count_precision: "unavailable",
     comments: [],
   };
 
@@ -87,17 +94,31 @@ export default function PostForm({
     0
   );
 
+  const watchedViewPrecision = useWatch({ control, name: "view_count_precision" });
+  const watchedReactionPrecision = useWatch({ control, name: "reaction_count_precision" });
+  const watchedCommentPrecision = useWatch({ control, name: "comment_count_precision" });
+
+  const handleDisplayChange = (
+    field: "view_count" | "reaction_count" | "comment_count",
+    val: string
+  ) => {
+    setValue(`${field}_display` as any, val);
+    const parsed = parseCountWithPrecision(val);
+    setValue(field as any, parsed.count, { shouldDirty: true, shouldValidate: true });
+    setValue(`${field}_precision` as any, parsed.precision, { shouldDirty: true, shouldValidate: true });
+  };
+
   const handleAddComment = () => {
     append({
       commenter_name: "",
       comment_text: "",
-      like_count: 0,
-      love_count: 0,
-      haha_count: 0,
-      wow_count: 0,
-      sad_count: 0,
-      angry_count: 0,
-      care_count: 0,
+      like_count: null,
+      love_count: null,
+      haha_count: null,
+      wow_count: null,
+      sad_count: null,
+      angry_count: null,
+      care_count: null,
       replies: [],
     });
   };
@@ -277,32 +298,196 @@ export default function PostForm({
         </div>
       </section>
 
-      {/* 4. Engagement Metrics (Defaults to 0) */}
+      {/* 4. Engagement Metrics & Post-Level Precision */}
       <section className="form-section">
         <div className="form-section-title">
-          <span>4. Engagement Counts</span>
+          <span>4. Post Engagement Metrics & Precision</span>
+        </div>
+
+        {/* Post-Level Aggregates with Precision Tracking */}
+        <div style={{ marginBottom: "1.25rem" }}>
+          <div style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "0.5rem" }}>
+            Post-Level Aggregates (Views, Total Reactions, Total Comments)
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "0.75rem" }}>
+            {/* Views */}
+            <div style={{ padding: "0.6rem", background: "var(--bg-surface-elevated)", borderRadius: "6px", border: "1px solid var(--border-subtle)" }}>
+              <div className="flex-between mb-1" style={{ alignItems: "center" }}>
+                <label className="form-label" style={{ marginBottom: 0, fontSize: "0.8rem", fontWeight: 600 }}>Post Views</label>
+                <span
+                  style={{
+                    fontSize: "0.7rem",
+                    padding: "0.1rem 0.4rem",
+                    borderRadius: "4px",
+                    background: watchedViewPrecision === "approximate" ? "rgba(234, 179, 8, 0.15)" : watchedViewPrecision === "precise" ? "rgba(34, 197, 94, 0.15)" : "var(--bg-surface)",
+                    color: watchedViewPrecision === "approximate" ? "#eab308" : watchedViewPrecision === "precise" ? "#22c55e" : "var(--text-tertiary)",
+                    border: "1px solid var(--border-subtle)",
+                  }}
+                >
+                  {watchedViewPrecision === "approximate" ? "Approximate (~)" : watchedViewPrecision === "precise" ? "Precise (=)" : "Unavailable"}
+                </span>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.4rem" }}>
+                <div>
+                  <label style={{ fontSize: "0.7rem", color: "var(--text-tertiary)" }}>Raw Display</label>
+                  <input
+                    type="text"
+                    {...register("view_count_display")}
+                    onChange={(e) => handleDisplayChange("view_count", e.target.value)}
+                    className="form-input"
+                    placeholder="e.g. 1.1K, 1,247"
+                    style={{ fontSize: "0.75rem", padding: "0.25rem 0.4rem" }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: "0.7rem", color: "var(--text-tertiary)" }}>Precision</label>
+                  <select
+                    {...register("view_count_precision")}
+                    className="form-select"
+                    style={{ fontSize: "0.75rem", padding: "0.25rem 0.4rem" }}
+                  >
+                    <option value="precise">Precise</option>
+                    <option value="approximate">Approximate</option>
+                    <option value="unavailable">Unavailable</option>
+                  </select>
+                </div>
+              </div>
+              <div style={{ marginTop: "0.35rem" }}>
+                <label style={{ fontSize: "0.7rem", color: "var(--text-tertiary)" }}>Normalized Number</label>
+                <input
+                  type="number"
+                  min={0}
+                  {...register("view_count", {
+                    setValueAs: (v) => (v === "" || v === null || isNaN(v) ? null : parseInt(v, 10)),
+                  })}
+                  className="form-input"
+                  placeholder="—"
+                  style={{ fontSize: "0.75rem", padding: "0.25rem 0.4rem" }}
+                />
+              </div>
+            </div>
+
+            {/* Total Reactions */}
+            <div style={{ padding: "0.6rem", background: "var(--bg-surface-elevated)", borderRadius: "6px", border: "1px solid var(--border-subtle)" }}>
+              <div className="flex-between mb-1" style={{ alignItems: "center" }}>
+                <label className="form-label" style={{ marginBottom: 0, fontSize: "0.8rem", fontWeight: 600 }}>Post Total Reactions</label>
+                <span
+                  style={{
+                    fontSize: "0.7rem",
+                    padding: "0.1rem 0.4rem",
+                    borderRadius: "4px",
+                    background: watchedReactionPrecision === "approximate" ? "rgba(234, 179, 8, 0.15)" : watchedReactionPrecision === "precise" ? "rgba(34, 197, 94, 0.15)" : "var(--bg-surface)",
+                    color: watchedReactionPrecision === "approximate" ? "#eab308" : watchedReactionPrecision === "precise" ? "#22c55e" : "var(--text-tertiary)",
+                    border: "1px solid var(--border-subtle)",
+                  }}
+                >
+                  {watchedReactionPrecision === "approximate" ? "Approximate (~)" : watchedReactionPrecision === "precise" ? "Precise (=)" : "Unavailable"}
+                </span>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.4rem" }}>
+                <div>
+                  <label style={{ fontSize: "0.7rem", color: "var(--text-tertiary)" }}>Raw Display</label>
+                  <input
+                    type="text"
+                    {...register("reaction_count_display")}
+                    onChange={(e) => handleDisplayChange("reaction_count", e.target.value)}
+                    className="form-input"
+                    placeholder="e.g. 1.2K, 247"
+                    style={{ fontSize: "0.75rem", padding: "0.25rem 0.4rem" }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: "0.7rem", color: "var(--text-tertiary)" }}>Precision</label>
+                  <select
+                    {...register("reaction_count_precision")}
+                    className="form-select"
+                    style={{ fontSize: "0.75rem", padding: "0.25rem 0.4rem" }}
+                  >
+                    <option value="precise">Precise</option>
+                    <option value="approximate">Approximate</option>
+                    <option value="unavailable">Unavailable</option>
+                  </select>
+                </div>
+              </div>
+              <div style={{ marginTop: "0.35rem" }}>
+                <label style={{ fontSize: "0.7rem", color: "var(--text-tertiary)" }}>Normalized Number</label>
+                <input
+                  type="number"
+                  min={0}
+                  {...register("reaction_count", {
+                    setValueAs: (v) => (v === "" || v === null || isNaN(v) ? null : parseInt(v, 10)),
+                  })}
+                  className="form-input"
+                  placeholder="—"
+                  style={{ fontSize: "0.75rem", padding: "0.25rem 0.4rem" }}
+                />
+              </div>
+            </div>
+
+            {/* Total Comments */}
+            <div style={{ padding: "0.6rem", background: "var(--bg-surface-elevated)", borderRadius: "6px", border: "1px solid var(--border-subtle)" }}>
+              <div className="flex-between mb-1" style={{ alignItems: "center" }}>
+                <label className="form-label" style={{ marginBottom: 0, fontSize: "0.8rem", fontWeight: 600 }}>Post Total Comments</label>
+                <span
+                  style={{
+                    fontSize: "0.7rem",
+                    padding: "0.1rem 0.4rem",
+                    borderRadius: "4px",
+                    background: watchedCommentPrecision === "approximate" ? "rgba(234, 179, 8, 0.15)" : watchedCommentPrecision === "precise" ? "rgba(34, 197, 94, 0.15)" : "var(--bg-surface)",
+                    color: watchedCommentPrecision === "approximate" ? "#eab308" : watchedCommentPrecision === "precise" ? "#22c55e" : "var(--text-tertiary)",
+                    border: "1px solid var(--border-subtle)",
+                  }}
+                >
+                  {watchedCommentPrecision === "approximate" ? "Approximate (~)" : watchedCommentPrecision === "precise" ? "Precise (=)" : "Unavailable"}
+                </span>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.4rem" }}>
+                <div>
+                  <label style={{ fontSize: "0.7rem", color: "var(--text-tertiary)" }}>Raw Display</label>
+                  <input
+                    type="text"
+                    {...register("comment_count_display")}
+                    onChange={(e) => handleDisplayChange("comment_count", e.target.value)}
+                    className="form-input"
+                    placeholder="e.g. 1.1K, 500"
+                    style={{ fontSize: "0.75rem", padding: "0.25rem 0.4rem" }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: "0.7rem", color: "var(--text-tertiary)" }}>Precision</label>
+                  <select
+                    {...register("comment_count_precision")}
+                    className="form-select"
+                    style={{ fontSize: "0.75rem", padding: "0.25rem 0.4rem" }}
+                  >
+                    <option value="precise">Precise</option>
+                    <option value="approximate">Approximate</option>
+                    <option value="unavailable">Unavailable</option>
+                  </select>
+                </div>
+              </div>
+              <div style={{ marginTop: "0.35rem" }}>
+                <label style={{ fontSize: "0.7rem", color: "var(--text-tertiary)" }}>Normalized Number</label>
+                <input
+                  type="number"
+                  min={0}
+                  {...register("comment_count", {
+                    setValueAs: (v) => (v === "" || v === null || isNaN(v) ? null : parseInt(v, 10)),
+                  })}
+                  className="form-input"
+                  placeholder="—"
+                  style={{ fontSize: "0.75rem", padding: "0.25rem 0.4rem" }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Post-Level Individual Reactions Breakdown (Simple Numbers) */}
+        <div style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "0.4rem" }}>
+          Post-Level Reaction Breakdown (Optional)
         </div>
         <div className="form-row">
-          <div className="form-group">
-            <label className="form-label">Views</label>
-            <input
-              type="number"
-              min={0}
-              {...register("view_count", { setValueAs: (v) => (v === "" || isNaN(v) ? 0 : parseInt(v, 10)) })}
-              className="form-input"
-              placeholder="0"
-            />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Total Reactions</label>
-            <input
-              type="number"
-              min={0}
-              {...register("reaction_count", { setValueAs: (v) => (v === "" || isNaN(v) ? 0 : parseInt(v, 10)) })}
-              className="form-input"
-              placeholder="0"
-            />
-          </div>
           <div className="form-group">
             <label className="form-label">Likes</label>
             <input
@@ -333,8 +518,6 @@ export default function PostForm({
               placeholder="0"
             />
           </div>
-        </div>
-        <div className="form-row">
           <div className="form-group">
             <label className="form-label">Angry</label>
             <input
@@ -371,16 +554,6 @@ export default function PostForm({
               type="number"
               min={0}
               {...register("care_count", { setValueAs: (v) => (v === "" || isNaN(v) ? 0 : parseInt(v, 10)) })}
-              className="form-input"
-              placeholder="0"
-            />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Total Visible Comments</label>
-            <input
-              type="number"
-              min={0}
-              {...register("comment_count", { setValueAs: (v) => (v === "" || isNaN(v) ? 0 : parseInt(v, 10)) })}
               className="form-input"
               placeholder="0"
             />

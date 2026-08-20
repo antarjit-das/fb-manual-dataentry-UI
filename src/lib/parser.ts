@@ -12,8 +12,62 @@
  *  - Emits CanonicalDataset and ParseMetrics.
  */
 
-import type { CanonicalDataset, CanonicalComment, CanonicalReply, ParseMetrics, ParseResult } from "./types.ts";
+import type {
+  CanonicalDataset,
+  CanonicalComment,
+  CanonicalReply,
+  ParseMetrics,
+  ParseResult,
+  CountPrecision,
+} from "./types.ts";
 import { CanonicalDatasetSchema } from "./schemas.ts";
+
+/**
+ * Parse post-level count string (views, reactions, comments) and detect precision.
+ * Strictly for POST-LEVEL metrics.
+ */
+export function parseCountWithPrecision(input: string | number | null | undefined): {
+  count: number | null;
+  display?: string;
+  precision: CountPrecision;
+} {
+  if (input === null || input === undefined || input === "" || input === "null" || input === "NA" || input === "N/A") {
+    return { count: null, display: undefined, precision: "unavailable" };
+  }
+
+  if (typeof input === "number") {
+    if (isNaN(input)) return { count: null, display: undefined, precision: "unavailable" };
+    return { count: Math.round(input), display: String(input), precision: "precise" };
+  }
+
+  const rawStr = String(input).trim();
+  if (!rawStr) {
+    return { count: null, display: undefined, precision: "unavailable" };
+  }
+
+  // Check for K / M / B abbreviation (e.g. "1.1K views", "5M", "2.5B reactions")
+  const kmbMatch = rawStr.match(/^([\d,]+(?:\.\d+)?)\s*([kmb])\b/i) || rawStr.match(/([\d,]+(?:\.\d+)?)\s*([kmb])\b/i);
+  if (kmbMatch) {
+    const numPart = parseFloat(kmbMatch[1].replace(/,/g, ""));
+    const unit = kmbMatch[2].toUpperCase();
+    const multiplier = unit === "K" ? 1000 : unit === "M" ? 1000000 : 1000000000;
+    const count = Math.round(numPart * multiplier);
+    const display = `${kmbMatch[1]}${unit}`;
+    return { count, display, precision: "approximate" };
+  }
+
+  // Check for exact numbers with or without commas (e.g. "1,247 views", "247 comments", "0")
+  const exactMatch = rawStr.match(/^([\d,]+)/) || rawStr.match(/([\d,]+)/);
+  if (exactMatch) {
+    const cleaned = exactMatch[1].replace(/,/g, "");
+    const count = parseInt(cleaned, 10);
+    if (!isNaN(count)) {
+      return { count, display: exactMatch[1], precision: "precise" };
+    }
+  }
+
+  return { count: null, display: undefined, precision: "unavailable" };
+}
 
 // ────────────────────────────────────────────────────────────────────────────
 // 1. Unicode & Whitespace Normalization
