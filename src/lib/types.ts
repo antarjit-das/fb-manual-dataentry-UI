@@ -11,8 +11,6 @@ import {
   CommentSchema,
   ReplySchema,
   SourceSchema,
-  AnnotationSchema,
-  CollectionLogSchema,
   PostFormSchema,
   CommentFormSchema,
   ReplyFormSchema,
@@ -64,12 +62,6 @@ export type Reply = z.infer<typeof ReplySchema>;
 
 /** One row in the SOURCES sheet. */
 export type Source = z.infer<typeof SourceSchema>;
-
-/** One row in the ANNOTATIONS sheet. */
-export type Annotation = z.infer<typeof AnnotationSchema>;
-
-/** One row in the COLLECTION_LOG sheet. */
-export type CollectionLog = z.infer<typeof CollectionLogSchema>;
 
 // ────────────────────────────────────────────────────────────────────────────
 // Form payload types (hierarchical — what the UI sends to the API)

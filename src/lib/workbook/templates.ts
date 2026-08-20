@@ -17,8 +17,6 @@ export const SHEET_NAMES = {
   COMMENTS: "COMMENTS",
   REPLIES: "REPLIES",
   SOURCES: "SOURCES",
-  COLLECTION_LOG: "COLLECTION_LOG",
-  ANNOTATIONS: "ANNOTATIONS",
   CODEBOOK: "CODEBOOK",
 } as const;
 
@@ -45,13 +43,29 @@ export const POST_COLUMNS = [
   "reaction_count_display",
   "reaction_count_precision",
   "like_count",
+  "like_count_display",
+  "like_count_precision",
   "love_count",
+  "love_count_display",
+  "love_count_precision",
   "haha_count",
+  "haha_count_display",
+  "haha_count_precision",
   "angry_count",
+  "angry_count_display",
+  "angry_count_precision",
   "sad_count",
+  "sad_count_display",
+  "sad_count_precision",
   "wow_count",
+  "wow_count_display",
+  "wow_count_precision",
   "care_count",
+  "care_count_display",
+  "care_count_precision",
   "share_count",
+  "share_count_display",
+  "share_count_precision",
   "comment_count",
   "comment_count_display",
   "comment_count_precision",
@@ -95,23 +109,6 @@ export const SOURCE_COLUMNS = [
   "source_type",
 ] as const;
 
-export const ANNOTATION_COLUMNS = [
-  "annotation_id",
-  "comment_id",
-  "sentiment",
-  "emotion",
-  "confidence",
-  "annotator_notes",
-] as const;
-
-export const COLLECTION_LOG_COLUMNS = [
-  "collection_id",
-  "session_start",
-  "session_end",
-  "posts_collected",
-  "notes",
-] as const;
-
 // ────────────────────────────────────────────────────────────────────────────
 // CODEBOOK content — field definitions and controlled values
 // ────────────────────────────────────────────────────────────────────────────
@@ -145,13 +142,29 @@ export const CODEBOOK_ROWS: string[][] = [
   ["reaction_count_display", "POSTS", "string", "No", "", "Original raw reaction count string as displayed on Facebook"],
   ["reaction_count_precision", "POSTS", "string", "No", "precise; approximate; unavailable", "Precision status of post total reaction count"],
   ["like_count", "POSTS", "integer", "No", "", "Number of likes"],
+  ["like_count_display", "POSTS", "string", "No", "", "Original raw like count string as displayed on Facebook"],
+  ["like_count_precision", "POSTS", "string", "No", "precise; approximate; unavailable", "Precision status of post like count"],
   ["love_count", "POSTS", "integer", "No", "", "Number of love reactions"],
+  ["love_count_display", "POSTS", "string", "No", "", "Original raw love count string as displayed on Facebook"],
+  ["love_count_precision", "POSTS", "string", "No", "precise; approximate; unavailable", "Precision status of post love reaction count"],
   ["haha_count", "POSTS", "integer", "No", "", "Number of haha reactions"],
+  ["haha_count_display", "POSTS", "string", "No", "", "Original raw haha count string as displayed on Facebook"],
+  ["haha_count_precision", "POSTS", "string", "No", "precise; approximate; unavailable", "Precision status of post haha reaction count"],
   ["angry_count", "POSTS", "integer", "No", "", "Number of angry reactions"],
+  ["angry_count_display", "POSTS", "string", "No", "", "Original raw angry count string as displayed on Facebook"],
+  ["angry_count_precision", "POSTS", "string", "No", "precise; approximate; unavailable", "Precision status of post angry reaction count"],
   ["sad_count", "POSTS", "integer", "No", "", "Number of sad reactions"],
+  ["sad_count_display", "POSTS", "string", "No", "", "Original raw sad count string as displayed on Facebook"],
+  ["sad_count_precision", "POSTS", "string", "No", "precise; approximate; unavailable", "Precision status of post sad reaction count"],
   ["wow_count", "POSTS", "integer", "No", "", "Number of wow reactions"],
+  ["wow_count_display", "POSTS", "string", "No", "", "Original raw wow count string as displayed on Facebook"],
+  ["wow_count_precision", "POSTS", "string", "No", "precise; approximate; unavailable", "Precision status of post wow reaction count"],
   ["care_count", "POSTS", "integer", "No", "", "Number of care reactions"],
+  ["care_count_display", "POSTS", "string", "No", "", "Original raw care count string as displayed on Facebook"],
+  ["care_count_precision", "POSTS", "string", "No", "precise; approximate; unavailable", "Precision status of post care reaction count"],
   ["share_count", "POSTS", "integer", "No", "", "Number of shares"],
+  ["share_count_display", "POSTS", "string", "No", "", "Original raw share count string as displayed on Facebook"],
+  ["share_count_precision", "POSTS", "string", "No", "precise; approximate; unavailable", "Precision status of post share count"],
   ["comment_count", "POSTS", "integer", "No", "", "Number of comments visible"],
   ["comment_count_display", "POSTS", "string", "No", "", "Original raw comment count string as displayed on Facebook"],
   ["comment_count_precision", "POSTS", "string", "No", "precise; approximate; unavailable", "Precision status of post total comment count"],
@@ -190,19 +203,4 @@ export const CODEBOOK_ROWS: string[][] = [
   ["source_id", "SOURCES", "string", "Yes", "S_NNNNNN", "Unique source identifier, auto-generated"],
   ["source_name", "SOURCES", "string", "Yes", "", "Name of the source page/profile"],
   ["source_type", "SOURCES", "string", "Yes", "News Page; Public Figure; Political Page; Organization; Community Page; Other", "Category of the source"],
-
-  // ANNOTATIONS fields
-  ["annotation_id", "ANNOTATIONS", "string", "Yes", "A_NNNNNN", "Unique annotation identifier"],
-  ["comment_id", "ANNOTATIONS", "string", "Yes", "C_NNNNNN", "Foreign key to COMMENTS.comment_id"],
-  ["sentiment", "ANNOTATIONS", "string", "No", "Positive; Negative; Neutral; Mixed; Unclear", "Sentiment label"],
-  ["emotion", "ANNOTATIONS", "string", "No", "Anger; Sadness; Fear; Joy; Disgust; Surprise; Neutral; Other", "Emotion label"],
-  ["confidence", "ANNOTATIONS", "integer", "No", "1; 2; 3; 4; 5", "Confidence level of annotation"],
-  ["annotator_notes", "ANNOTATIONS", "string", "No", "", "Free-text notes from annotator"],
-
-  // COLLECTION_LOG fields
-  ["collection_id", "COLLECTION_LOG", "string", "Yes", "", "Unique session identifier"],
-  ["session_start", "COLLECTION_LOG", "datetime", "Yes", "", "Session start timestamp"],
-  ["session_end", "COLLECTION_LOG", "datetime", "No", "", "Session end timestamp"],
-  ["posts_collected", "COLLECTION_LOG", "integer", "No", "", "Number of posts collected in session"],
-  ["notes", "COLLECTION_LOG", "string", "No", "", "Session notes"],
 ];

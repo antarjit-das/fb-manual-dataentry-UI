@@ -82,6 +82,23 @@ export function rowToPost(row: Record<string, unknown>): Post {
   const commentCount = cellToNumber(row.comment_count);
   const commentDisplay = cellToString(row.comment_count_display);
 
+  const likeCount = cellToNumber(row.like_count);
+  const likeDisplay = cellToString(row.like_count_display);
+  const loveCount = cellToNumber(row.love_count);
+  const loveDisplay = cellToString(row.love_count_display);
+  const hahaCount = cellToNumber(row.haha_count);
+  const hahaDisplay = cellToString(row.haha_count_display);
+  const angryCount = cellToNumber(row.angry_count);
+  const angryDisplay = cellToString(row.angry_count_display);
+  const sadCount = cellToNumber(row.sad_count);
+  const sadDisplay = cellToString(row.sad_count_display);
+  const wowCount = cellToNumber(row.wow_count);
+  const wowDisplay = cellToString(row.wow_count_display);
+  const careCount = cellToNumber(row.care_count);
+  const careDisplay = cellToString(row.care_count_display);
+  const shareCount = cellToNumber(row.share_count);
+  const shareDisplay = cellToString(row.share_count_display);
+
   return {
     post_id: String(row.post_id ?? ""),
     platform: String(row.platform ?? "Facebook"),
@@ -100,14 +117,30 @@ export function rowToPost(row: Record<string, unknown>): Post {
     reaction_count: reactionCount,
     reaction_count_display: reactionDisplay,
     reaction_count_precision: parsePrecision(row.reaction_count_precision, reactionCount, reactionDisplay),
-    like_count: cellToNumber(row.like_count),
-    love_count: cellToNumber(row.love_count),
-    haha_count: cellToNumber(row.haha_count),
-    angry_count: cellToNumber(row.angry_count),
-    sad_count: cellToNumber(row.sad_count),
-    wow_count: cellToNumber(row.wow_count),
-    care_count: cellToNumber(row.care_count),
-    share_count: cellToNumber(row.share_count),
+    like_count: likeCount,
+    like_count_display: likeDisplay,
+    like_count_precision: parsePrecision(row.like_count_precision, likeCount, likeDisplay),
+    love_count: loveCount,
+    love_count_display: loveDisplay,
+    love_count_precision: parsePrecision(row.love_count_precision, loveCount, loveDisplay),
+    haha_count: hahaCount,
+    haha_count_display: hahaDisplay,
+    haha_count_precision: parsePrecision(row.haha_count_precision, hahaCount, hahaDisplay),
+    angry_count: angryCount,
+    angry_count_display: angryDisplay,
+    angry_count_precision: parsePrecision(row.angry_count_precision, angryCount, angryDisplay),
+    sad_count: sadCount,
+    sad_count_display: sadDisplay,
+    sad_count_precision: parsePrecision(row.sad_count_precision, sadCount, sadDisplay),
+    wow_count: wowCount,
+    wow_count_display: wowDisplay,
+    wow_count_precision: parsePrecision(row.wow_count_precision, wowCount, wowDisplay),
+    care_count: careCount,
+    care_count_display: careDisplay,
+    care_count_precision: parsePrecision(row.care_count_precision, careCount, careDisplay),
+    share_count: shareCount,
+    share_count_display: shareDisplay,
+    share_count_precision: parsePrecision(row.share_count_precision, shareCount, shareDisplay),
     comment_count: commentCount,
     comment_count_display: commentDisplay,
     comment_count_precision: parsePrecision(row.comment_count_precision, commentCount, commentDisplay),

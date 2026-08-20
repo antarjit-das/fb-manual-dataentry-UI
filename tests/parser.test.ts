@@ -748,12 +748,29 @@ describe("PART 15: Post-Level Count Precision System (Test Cases A through J)", 
       reaction_count_display: "247",
       reaction_count_precision: "precise",
       like_count: 200,
+      like_count_display: "200",
+      like_count_precision: "precise",
       love_count: 47,
+      love_count_display: "47",
+      love_count_precision: "precise",
       haha_count: 0,
+      haha_count_display: "",
+      haha_count_precision: "unavailable",
       angry_count: 0,
+      angry_count_display: "",
+      angry_count_precision: "unavailable",
       sad_count: 0,
+      sad_count_display: "",
+      sad_count_precision: "unavailable",
       wow_count: 0,
+      wow_count_display: "",
+      wow_count_precision: "unavailable",
       care_count: 0,
+      care_count_display: "",
+      care_count_precision: "unavailable",
+      share_count: null,
+      share_count_display: "",
+      share_count_precision: "unavailable",
       comment_count: null,
       comment_count_display: "",
       comment_count_precision: "unavailable",
@@ -800,6 +817,30 @@ describe("PART 15: Post-Level Count Precision System (Test Cases A through J)", 
       reaction_count: prepared.post.reaction_count,
       reaction_count_display: prepared.post.reaction_count_display,
       reaction_count_precision: prepared.post.reaction_count_precision,
+      like_count: prepared.post.like_count,
+      like_count_display: prepared.post.like_count_display,
+      like_count_precision: prepared.post.like_count_precision,
+      love_count: prepared.post.love_count,
+      love_count_display: prepared.post.love_count_display,
+      love_count_precision: prepared.post.love_count_precision,
+      haha_count: prepared.post.haha_count,
+      haha_count_display: prepared.post.haha_count_display,
+      haha_count_precision: prepared.post.haha_count_precision,
+      angry_count: prepared.post.angry_count,
+      angry_count_display: prepared.post.angry_count_display,
+      angry_count_precision: prepared.post.angry_count_precision,
+      sad_count: prepared.post.sad_count,
+      sad_count_display: prepared.post.sad_count_display,
+      sad_count_precision: prepared.post.sad_count_precision,
+      wow_count: prepared.post.wow_count,
+      wow_count_display: prepared.post.wow_count_display,
+      wow_count_precision: prepared.post.wow_count_precision,
+      care_count: prepared.post.care_count,
+      care_count_display: prepared.post.care_count_display,
+      care_count_precision: prepared.post.care_count_precision,
+      share_count: prepared.post.share_count,
+      share_count_display: prepared.post.share_count_display,
+      share_count_precision: prepared.post.share_count_precision,
       comment_count: prepared.post.comment_count,
       comment_count_display: prepared.post.comment_count_display,
       comment_count_precision: prepared.post.comment_count_precision,
@@ -836,5 +877,81 @@ describe("PART 15: Post-Level Count Precision System (Test Cases A through J)", 
     assert.equal(restoredComment.commenter_name, "Commenter");
     assert.equal(restoredComment.comment_text, "Comment body");
     assert.equal(restoredComment.like_count, 10);
+  });
+
+  // Test K: Post-level individual reaction precision breakdown round-trip
+  it("Test K: Post-level individual reaction precision breakdown round-trip", () => {
+    const formData: PostFormData = {
+      post_id: "FB_000002",
+      platform: "Facebook",
+      content_type: "Post",
+      source_name: "News Channel",
+      source_type: "News Page",
+      original_post_date: "10/02/2026",
+      collection_date: "10/02/2026",
+      language: "Bengali",
+      post_text: "Reactions test",
+      view_count: 50000,
+      view_count_display: "50K",
+      view_count_precision: "approximate",
+      reaction_count: 1200,
+      reaction_count_display: "1.2K",
+      reaction_count_precision: "approximate",
+      like_count: 1000,
+      like_count_display: "1K",
+      like_count_precision: "approximate",
+      love_count: 150,
+      love_count_display: "150",
+      love_count_precision: "precise",
+      haha_count: 50,
+      haha_count_display: "50",
+      haha_count_precision: "precise",
+      angry_count: null,
+      angry_count_display: "",
+      angry_count_precision: "unavailable",
+      sad_count: null,
+      sad_count_display: "",
+      sad_count_precision: "unavailable",
+      wow_count: null,
+      wow_count_display: "",
+      wow_count_precision: "unavailable",
+      care_count: null,
+      care_count_display: "",
+      care_count_precision: "unavailable",
+      share_count: 300,
+      share_count_display: "300",
+      share_count_precision: "precise",
+      comment_count: 25,
+      comment_count_display: "25",
+      comment_count_precision: "precise",
+      comments: [],
+    };
+
+    const prepared = preparePayload(formData, [], [], []);
+    assert.equal(prepared.post.like_count, 1000);
+    assert.equal(prepared.post.like_count_display, "1K");
+    assert.equal(prepared.post.like_count_precision, "approximate");
+    assert.equal(prepared.post.love_count, 150);
+    assert.equal(prepared.post.love_count_display, "150");
+    assert.equal(prepared.post.love_count_precision, "precise");
+    assert.equal(prepared.post.angry_count, null);
+    assert.equal(prepared.post.angry_count_precision, "unavailable");
+
+    const row = postToRow(prepared.post);
+    assert.ok(row.length > 0);
+
+    const record: Record<string, unknown> = {};
+    for (const key of Object.keys(prepared.post)) {
+      record[key] = (prepared.post as any)[key];
+    }
+    const restored = rowToPost(record);
+    assert.equal(restored.like_count, 1000);
+    assert.equal(restored.like_count_display, "1K");
+    assert.equal(restored.like_count_precision, "approximate");
+    assert.equal(restored.love_count, 150);
+    assert.equal(restored.love_count_display, "150");
+    assert.equal(restored.love_count_precision, "precise");
+    assert.equal(restored.share_count, 300);
+    assert.equal(restored.share_count_precision, "precise");
   });
 });

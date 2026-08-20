@@ -39,8 +39,6 @@ import {
   COMMENT_COLUMNS,
   REPLY_COLUMNS,
   SOURCE_COLUMNS,
-  ANNOTATION_COLUMNS,
-  COLLECTION_LOG_COLUMNS,
   CODEBOOK_HEADERS,
   CODEBOOK_ROWS,
 } from "./templates";
@@ -108,8 +106,6 @@ function createTemplate(): ExcelJS.Workbook {
   addSheet(SHEET_NAMES.COMMENTS, COMMENT_COLUMNS as unknown as string[]);
   addSheet(SHEET_NAMES.REPLIES, REPLY_COLUMNS as unknown as string[]);
   addSheet(SHEET_NAMES.SOURCES, SOURCE_COLUMNS as unknown as string[]);
-  addSheet(SHEET_NAMES.COLLECTION_LOG, COLLECTION_LOG_COLUMNS as unknown as string[]);
-  addSheet(SHEET_NAMES.ANNOTATIONS, ANNOTATION_COLUMNS as unknown as string[]);
 
   // CODEBOOK sheet
   const cbWs = addSheet(SHEET_NAMES.CODEBOOK, CODEBOOK_HEADERS as unknown as string[]);
@@ -473,13 +469,30 @@ export async function getPost(postId: string): Promise<PostFormData | null> {
     reaction_count: post.reaction_count,
     reaction_count_display: post.reaction_count_display,
     reaction_count_precision: post.reaction_count_precision || "unavailable",
-    like_count: post.like_count ?? 0,
-    love_count: post.love_count ?? 0,
-    haha_count: post.haha_count ?? 0,
-    angry_count: post.angry_count ?? 0,
-    sad_count: post.sad_count ?? 0,
-    wow_count: post.wow_count ?? 0,
-    care_count: post.care_count ?? 0,
+    like_count: post.like_count ?? null,
+    like_count_display: post.like_count_display,
+    like_count_precision: post.like_count_precision || "unavailable",
+    love_count: post.love_count ?? null,
+    love_count_display: post.love_count_display,
+    love_count_precision: post.love_count_precision || "unavailable",
+    haha_count: post.haha_count ?? null,
+    haha_count_display: post.haha_count_display,
+    haha_count_precision: post.haha_count_precision || "unavailable",
+    angry_count: post.angry_count ?? null,
+    angry_count_display: post.angry_count_display,
+    angry_count_precision: post.angry_count_precision || "unavailable",
+    sad_count: post.sad_count ?? null,
+    sad_count_display: post.sad_count_display,
+    sad_count_precision: post.sad_count_precision || "unavailable",
+    wow_count: post.wow_count ?? null,
+    wow_count_display: post.wow_count_display,
+    wow_count_precision: post.wow_count_precision || "unavailable",
+    care_count: post.care_count ?? null,
+    care_count_display: post.care_count_display,
+    care_count_precision: post.care_count_precision || "unavailable",
+    share_count: post.share_count ?? null,
+    share_count_display: post.share_count_display,
+    share_count_precision: post.share_count_precision || "unavailable",
     comment_count: post.comment_count,
     comment_count_display: post.comment_count_display,
     comment_count_precision: post.comment_count_precision || "unavailable",

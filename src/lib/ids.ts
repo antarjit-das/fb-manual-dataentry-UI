@@ -23,7 +23,6 @@ export const ID_PREFIXES = {
   comment: "C_",
   reply: "R_",
   source: "S_",
-  annotation: "A_",
 } as const;
 
 export type EntityType = keyof typeof ID_PREFIXES;
@@ -33,7 +32,6 @@ const ID_PATTERNS: Record<EntityType, RegExp> = {
   comment: /^C_(\d{6})$/,
   reply: /^R_(\d{6})$/,
   source: /^S_(\d{6})$/,
-  annotation: /^A_(\d{6})$/,
 };
 
 // ────────────────────────────────────────────────────────────────────────────

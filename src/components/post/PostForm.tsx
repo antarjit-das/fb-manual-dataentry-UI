@@ -28,6 +28,101 @@ interface PostFormProps {
   onSuccess?: (result: SaveResult) => void;
 }
 
+interface PrecisionMetricCardProps {
+  label: string;
+  icon?: string;
+  field: string;
+  register: any;
+  control: any;
+  onDisplayChange: (field: any, val: string) => void;
+  placeholder?: string;
+}
+
+function PrecisionMetricCard({
+  label,
+  icon,
+  field,
+  register,
+  control,
+  onDisplayChange,
+  placeholder = "e.g. 1.2K, 247",
+}: PrecisionMetricCardProps) {
+  const precisionValue = useWatch({ control, name: `${field}_precision` as any }) as unknown as string;
+  const isApprox = precisionValue === "approximate";
+  const isPrecise = precisionValue === "precise";
+
+  return (
+    <div
+      style={{
+        padding: "0.6rem",
+        background: "var(--bg-surface-elevated)",
+        borderRadius: "6px",
+        border: "1px solid var(--border-subtle)",
+      }}
+    >
+      <div className="flex-between mb-1" style={{ alignItems: "center" }}>
+        <label className="form-label" style={{ marginBottom: 0, fontSize: "0.8rem", fontWeight: 600 }}>
+          {icon ? `${icon} ` : ""}{label}
+        </label>
+        <span
+          style={{
+            fontSize: "0.7rem",
+            padding: "0.1rem 0.4rem",
+            borderRadius: "4px",
+            background: isApprox
+              ? "rgba(234, 179, 8, 0.15)"
+              : isPrecise
+              ? "rgba(34, 197, 94, 0.15)"
+              : "var(--bg-surface)",
+            color: isApprox ? "#eab308" : isPrecise ? "#22c55e" : "var(--text-tertiary)",
+            border: "1px solid var(--border-subtle)",
+          }}
+        >
+          {isApprox ? "Approximate (~)" : isPrecise ? "Precise (=)" : "Unavailable"}
+        </span>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.4rem" }}>
+        <div>
+          <label style={{ fontSize: "0.7rem", color: "var(--text-tertiary)" }}>Raw Display</label>
+          <input
+            type="text"
+            {...register(`${field}_display` as any)}
+            onChange={(e: any) => onDisplayChange(field, e.target.value)}
+            className="form-input"
+            placeholder={placeholder}
+            style={{ fontSize: "0.75rem", padding: "0.25rem 0.4rem" }}
+          />
+        </div>
+        <div>
+          <label style={{ fontSize: "0.7rem", color: "var(--text-tertiary)" }}>Precision</label>
+          <select
+            {...register(`${field}_precision` as any)}
+            className="form-select"
+            style={{ fontSize: "0.75rem", padding: "0.25rem 0.4rem" }}
+          >
+            <option value="precise">Precise</option>
+            <option value="approximate">Approximate</option>
+            <option value="unavailable">Unavailable</option>
+          </select>
+        </div>
+      </div>
+      <div style={{ marginTop: "0.35rem" }}>
+        <label style={{ fontSize: "0.7rem", color: "var(--text-tertiary)" }}>Normalized Number</label>
+        <input
+          type="number"
+          min={0}
+          {...register(field as any, {
+            setValueAs: (v: any) => (v === "" || v === null || isNaN(v) ? null : parseInt(v, 10)),
+          })}
+          className="form-input"
+          placeholder="—"
+          style={{ fontSize: "0.75rem", padding: "0.25rem 0.4rem" }}
+        />
+      </div>
+    </div>
+  );
+}
+
 export default function PostForm({
   initialData,
   mode = "create",
@@ -53,13 +148,30 @@ export default function PostForm({
     reaction_count: null,
     reaction_count_display: "",
     reaction_count_precision: "unavailable",
-    like_count: 0,
-    love_count: 0,
-    haha_count: 0,
-    angry_count: 0,
-    sad_count: 0,
-    wow_count: 0,
-    care_count: 0,
+    like_count: null,
+    like_count_display: "",
+    like_count_precision: "unavailable",
+    love_count: null,
+    love_count_display: "",
+    love_count_precision: "unavailable",
+    haha_count: null,
+    haha_count_display: "",
+    haha_count_precision: "unavailable",
+    angry_count: null,
+    angry_count_display: "",
+    angry_count_precision: "unavailable",
+    sad_count: null,
+    sad_count_display: "",
+    sad_count_precision: "unavailable",
+    wow_count: null,
+    wow_count_display: "",
+    wow_count_precision: "unavailable",
+    care_count: null,
+    care_count_display: "",
+    care_count_precision: "unavailable",
+    share_count: null,
+    share_count_display: "",
+    share_count_precision: "unavailable",
     comment_count: null,
     comment_count_display: "",
     comment_count_precision: "unavailable",
@@ -94,12 +206,8 @@ export default function PostForm({
     0
   );
 
-  const watchedViewPrecision = useWatch({ control, name: "view_count_precision" });
-  const watchedReactionPrecision = useWatch({ control, name: "reaction_count_precision" });
-  const watchedCommentPrecision = useWatch({ control, name: "comment_count_precision" });
-
   const handleDisplayChange = (
-    field: "view_count" | "reaction_count" | "comment_count",
+    field: string,
     val: string
   ) => {
     setValue(`${field}_display` as any, val);
@@ -307,255 +415,105 @@ export default function PostForm({
         {/* Post-Level Aggregates with Precision Tracking */}
         <div style={{ marginBottom: "1.25rem" }}>
           <div style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "0.5rem" }}>
-            Post-Level Aggregates (Views, Total Reactions, Total Comments)
+            Post-Level Aggregates (Views, Total Reactions, Total Comments, Shares)
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "0.75rem" }}>
-            {/* Views */}
-            <div style={{ padding: "0.6rem", background: "var(--bg-surface-elevated)", borderRadius: "6px", border: "1px solid var(--border-subtle)" }}>
-              <div className="flex-between mb-1" style={{ alignItems: "center" }}>
-                <label className="form-label" style={{ marginBottom: 0, fontSize: "0.8rem", fontWeight: 600 }}>Post Views</label>
-                <span
-                  style={{
-                    fontSize: "0.7rem",
-                    padding: "0.1rem 0.4rem",
-                    borderRadius: "4px",
-                    background: watchedViewPrecision === "approximate" ? "rgba(234, 179, 8, 0.15)" : watchedViewPrecision === "precise" ? "rgba(34, 197, 94, 0.15)" : "var(--bg-surface)",
-                    color: watchedViewPrecision === "approximate" ? "#eab308" : watchedViewPrecision === "precise" ? "#22c55e" : "var(--text-tertiary)",
-                    border: "1px solid var(--border-subtle)",
-                  }}
-                >
-                  {watchedViewPrecision === "approximate" ? "Approximate (~)" : watchedViewPrecision === "precise" ? "Precise (=)" : "Unavailable"}
-                </span>
-              </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.4rem" }}>
-                <div>
-                  <label style={{ fontSize: "0.7rem", color: "var(--text-tertiary)" }}>Raw Display</label>
-                  <input
-                    type="text"
-                    {...register("view_count_display")}
-                    onChange={(e) => handleDisplayChange("view_count", e.target.value)}
-                    className="form-input"
-                    placeholder="e.g. 1.1K, 1,247"
-                    style={{ fontSize: "0.75rem", padding: "0.25rem 0.4rem" }}
-                  />
-                </div>
-                <div>
-                  <label style={{ fontSize: "0.7rem", color: "var(--text-tertiary)" }}>Precision</label>
-                  <select
-                    {...register("view_count_precision")}
-                    className="form-select"
-                    style={{ fontSize: "0.75rem", padding: "0.25rem 0.4rem" }}
-                  >
-                    <option value="precise">Precise</option>
-                    <option value="approximate">Approximate</option>
-                    <option value="unavailable">Unavailable</option>
-                  </select>
-                </div>
-              </div>
-              <div style={{ marginTop: "0.35rem" }}>
-                <label style={{ fontSize: "0.7rem", color: "var(--text-tertiary)" }}>Normalized Number</label>
-                <input
-                  type="number"
-                  min={0}
-                  {...register("view_count", {
-                    setValueAs: (v) => (v === "" || v === null || isNaN(v) ? null : parseInt(v, 10)),
-                  })}
-                  className="form-input"
-                  placeholder="—"
-                  style={{ fontSize: "0.75rem", padding: "0.25rem 0.4rem" }}
-                />
-              </div>
-            </div>
-
-            {/* Total Reactions */}
-            <div style={{ padding: "0.6rem", background: "var(--bg-surface-elevated)", borderRadius: "6px", border: "1px solid var(--border-subtle)" }}>
-              <div className="flex-between mb-1" style={{ alignItems: "center" }}>
-                <label className="form-label" style={{ marginBottom: 0, fontSize: "0.8rem", fontWeight: 600 }}>Post Total Reactions</label>
-                <span
-                  style={{
-                    fontSize: "0.7rem",
-                    padding: "0.1rem 0.4rem",
-                    borderRadius: "4px",
-                    background: watchedReactionPrecision === "approximate" ? "rgba(234, 179, 8, 0.15)" : watchedReactionPrecision === "precise" ? "rgba(34, 197, 94, 0.15)" : "var(--bg-surface)",
-                    color: watchedReactionPrecision === "approximate" ? "#eab308" : watchedReactionPrecision === "precise" ? "#22c55e" : "var(--text-tertiary)",
-                    border: "1px solid var(--border-subtle)",
-                  }}
-                >
-                  {watchedReactionPrecision === "approximate" ? "Approximate (~)" : watchedReactionPrecision === "precise" ? "Precise (=)" : "Unavailable"}
-                </span>
-              </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.4rem" }}>
-                <div>
-                  <label style={{ fontSize: "0.7rem", color: "var(--text-tertiary)" }}>Raw Display</label>
-                  <input
-                    type="text"
-                    {...register("reaction_count_display")}
-                    onChange={(e) => handleDisplayChange("reaction_count", e.target.value)}
-                    className="form-input"
-                    placeholder="e.g. 1.2K, 247"
-                    style={{ fontSize: "0.75rem", padding: "0.25rem 0.4rem" }}
-                  />
-                </div>
-                <div>
-                  <label style={{ fontSize: "0.7rem", color: "var(--text-tertiary)" }}>Precision</label>
-                  <select
-                    {...register("reaction_count_precision")}
-                    className="form-select"
-                    style={{ fontSize: "0.75rem", padding: "0.25rem 0.4rem" }}
-                  >
-                    <option value="precise">Precise</option>
-                    <option value="approximate">Approximate</option>
-                    <option value="unavailable">Unavailable</option>
-                  </select>
-                </div>
-              </div>
-              <div style={{ marginTop: "0.35rem" }}>
-                <label style={{ fontSize: "0.7rem", color: "var(--text-tertiary)" }}>Normalized Number</label>
-                <input
-                  type="number"
-                  min={0}
-                  {...register("reaction_count", {
-                    setValueAs: (v) => (v === "" || v === null || isNaN(v) ? null : parseInt(v, 10)),
-                  })}
-                  className="form-input"
-                  placeholder="—"
-                  style={{ fontSize: "0.75rem", padding: "0.25rem 0.4rem" }}
-                />
-              </div>
-            </div>
-
-            {/* Total Comments */}
-            <div style={{ padding: "0.6rem", background: "var(--bg-surface-elevated)", borderRadius: "6px", border: "1px solid var(--border-subtle)" }}>
-              <div className="flex-between mb-1" style={{ alignItems: "center" }}>
-                <label className="form-label" style={{ marginBottom: 0, fontSize: "0.8rem", fontWeight: 600 }}>Post Total Comments</label>
-                <span
-                  style={{
-                    fontSize: "0.7rem",
-                    padding: "0.1rem 0.4rem",
-                    borderRadius: "4px",
-                    background: watchedCommentPrecision === "approximate" ? "rgba(234, 179, 8, 0.15)" : watchedCommentPrecision === "precise" ? "rgba(34, 197, 94, 0.15)" : "var(--bg-surface)",
-                    color: watchedCommentPrecision === "approximate" ? "#eab308" : watchedCommentPrecision === "precise" ? "#22c55e" : "var(--text-tertiary)",
-                    border: "1px solid var(--border-subtle)",
-                  }}
-                >
-                  {watchedCommentPrecision === "approximate" ? "Approximate (~)" : watchedCommentPrecision === "precise" ? "Precise (=)" : "Unavailable"}
-                </span>
-              </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.4rem" }}>
-                <div>
-                  <label style={{ fontSize: "0.7rem", color: "var(--text-tertiary)" }}>Raw Display</label>
-                  <input
-                    type="text"
-                    {...register("comment_count_display")}
-                    onChange={(e) => handleDisplayChange("comment_count", e.target.value)}
-                    className="form-input"
-                    placeholder="e.g. 1.1K, 500"
-                    style={{ fontSize: "0.75rem", padding: "0.25rem 0.4rem" }}
-                  />
-                </div>
-                <div>
-                  <label style={{ fontSize: "0.7rem", color: "var(--text-tertiary)" }}>Precision</label>
-                  <select
-                    {...register("comment_count_precision")}
-                    className="form-select"
-                    style={{ fontSize: "0.75rem", padding: "0.25rem 0.4rem" }}
-                  >
-                    <option value="precise">Precise</option>
-                    <option value="approximate">Approximate</option>
-                    <option value="unavailable">Unavailable</option>
-                  </select>
-                </div>
-              </div>
-              <div style={{ marginTop: "0.35rem" }}>
-                <label style={{ fontSize: "0.7rem", color: "var(--text-tertiary)" }}>Normalized Number</label>
-                <input
-                  type="number"
-                  min={0}
-                  {...register("comment_count", {
-                    setValueAs: (v) => (v === "" || v === null || isNaN(v) ? null : parseInt(v, 10)),
-                  })}
-                  className="form-input"
-                  placeholder="—"
-                  style={{ fontSize: "0.75rem", padding: "0.25rem 0.4rem" }}
-                />
-              </div>
-            </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "0.75rem" }}>
+            <PrecisionMetricCard
+              label="Post Views"
+              field="view_count"
+              register={register}
+              control={control}
+              onDisplayChange={handleDisplayChange}
+              placeholder="e.g. 1.1K, 1,247"
+            />
+            <PrecisionMetricCard
+              label="Total Reactions"
+              field="reaction_count"
+              register={register}
+              control={control}
+              onDisplayChange={handleDisplayChange}
+              placeholder="e.g. 1.2K, 247"
+            />
+            <PrecisionMetricCard
+              label="Total Comments"
+              field="comment_count"
+              register={register}
+              control={control}
+              onDisplayChange={handleDisplayChange}
+              placeholder="e.g. 1.1K, 500"
+            />
+            <PrecisionMetricCard
+              label="Shares"
+              field="share_count"
+              register={register}
+              control={control}
+              onDisplayChange={handleDisplayChange}
+              placeholder="e.g. 24K, 150"
+            />
           </div>
         </div>
 
-        {/* Post-Level Individual Reactions Breakdown (Simple Numbers) */}
-        <div style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "0.4rem" }}>
-          Post-Level Reaction Breakdown (Optional)
-        </div>
-        <div className="form-row">
-          <div className="form-group">
-            <label className="form-label">Likes</label>
-            <input
-              type="number"
-              min={0}
-              {...register("like_count", { setValueAs: (v) => (v === "" || isNaN(v) ? 0 : parseInt(v, 10)) })}
-              className="form-input"
-              placeholder="0"
-            />
+        {/* Post-Level Individual Reactions Breakdown with Precision Tracking */}
+        <div>
+          <div style={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "0.5rem" }}>
+            Post-Level Reaction Breakdown (Optional Precision Metrics)
           </div>
-          <div className="form-group">
-            <label className="form-label">Love</label>
-            <input
-              type="number"
-              min={0}
-              {...register("love_count", { setValueAs: (v) => (v === "" || isNaN(v) ? 0 : parseInt(v, 10)) })}
-              className="form-input"
-              placeholder="0"
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "0.75rem" }}>
+            <PrecisionMetricCard
+              label="Likes"
+              icon="👍"
+              field="like_count"
+              register={register}
+              control={control}
+              onDisplayChange={handleDisplayChange}
             />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Haha</label>
-            <input
-              type="number"
-              min={0}
-              {...register("haha_count", { setValueAs: (v) => (v === "" || isNaN(v) ? 0 : parseInt(v, 10)) })}
-              className="form-input"
-              placeholder="0"
+            <PrecisionMetricCard
+              label="Love"
+              icon="❤️"
+              field="love_count"
+              register={register}
+              control={control}
+              onDisplayChange={handleDisplayChange}
             />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Angry</label>
-            <input
-              type="number"
-              min={0}
-              {...register("angry_count", { setValueAs: (v) => (v === "" || isNaN(v) ? 0 : parseInt(v, 10)) })}
-              className="form-input"
-              placeholder="0"
+            <PrecisionMetricCard
+              label="Haha"
+              icon="😆"
+              field="haha_count"
+              register={register}
+              control={control}
+              onDisplayChange={handleDisplayChange}
             />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Sad</label>
-            <input
-              type="number"
-              min={0}
-              {...register("sad_count", { setValueAs: (v) => (v === "" || isNaN(v) ? 0 : parseInt(v, 10)) })}
-              className="form-input"
-              placeholder="0"
+            <PrecisionMetricCard
+              label="Angry"
+              icon="😡"
+              field="angry_count"
+              register={register}
+              control={control}
+              onDisplayChange={handleDisplayChange}
             />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Wow</label>
-            <input
-              type="number"
-              min={0}
-              {...register("wow_count", { setValueAs: (v) => (v === "" || isNaN(v) ? 0 : parseInt(v, 10)) })}
-              className="form-input"
-              placeholder="0"
+            <PrecisionMetricCard
+              label="Sad"
+              icon="😢"
+              field="sad_count"
+              register={register}
+              control={control}
+              onDisplayChange={handleDisplayChange}
             />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Care</label>
-            <input
-              type="number"
-              min={0}
-              {...register("care_count", { setValueAs: (v) => (v === "" || isNaN(v) ? 0 : parseInt(v, 10)) })}
-              className="form-input"
-              placeholder="0"
+            <PrecisionMetricCard
+              label="Wow"
+              icon="😮"
+              field="wow_count"
+              register={register}
+              control={control}
+              onDisplayChange={handleDisplayChange}
+            />
+            <PrecisionMetricCard
+              label="Care"
+              icon="🥰"
+              field="care_count"
+              register={register}
+              control={control}
+              onDisplayChange={handleDisplayChange}
             />
           </div>
         </div>

@@ -36,28 +36,6 @@ export const LANGUAGES = [
   "Other",
 ] as const;
 
-// Future annotation enums (MVP creates the structure, not the workflow)
-export const SENTIMENTS = [
-  "Positive",
-  "Negative",
-  "Neutral",
-  "Mixed",
-  "Unclear",
-] as const;
-
-export const EMOTIONS = [
-  "Anger",
-  "Sadness",
-  "Fear",
-  "Joy",
-  "Disgust",
-  "Surprise",
-  "Neutral",
-  "Other",
-] as const;
-
-export const CONFIDENCE_LEVELS = [1, 2, 3, 4, 5] as const;
-
 export const PRECISION_TYPES = [
   "precise",
   "approximate",
@@ -124,13 +102,29 @@ export const PostSchema = z.object({
   reaction_count_display: optionalText,
   reaction_count_precision: z.enum(PRECISION_TYPES).default("unavailable"),
   like_count: engagementCount,
+  like_count_display: optionalText,
+  like_count_precision: z.enum(PRECISION_TYPES).default("unavailable"),
   love_count: engagementCount,
+  love_count_display: optionalText,
+  love_count_precision: z.enum(PRECISION_TYPES).default("unavailable"),
   haha_count: engagementCount,
+  haha_count_display: optionalText,
+  haha_count_precision: z.enum(PRECISION_TYPES).default("unavailable"),
   angry_count: engagementCount,
+  angry_count_display: optionalText,
+  angry_count_precision: z.enum(PRECISION_TYPES).default("unavailable"),
   sad_count: engagementCount,
+  sad_count_display: optionalText,
+  sad_count_precision: z.enum(PRECISION_TYPES).default("unavailable"),
   wow_count: engagementCount,
+  wow_count_display: optionalText,
+  wow_count_precision: z.enum(PRECISION_TYPES).default("unavailable"),
   care_count: engagementCount,
+  care_count_display: optionalText,
+  care_count_precision: z.enum(PRECISION_TYPES).default("unavailable"),
   share_count: engagementCount,
+  share_count_display: optionalText,
+  share_count_precision: z.enum(PRECISION_TYPES).default("unavailable"),
   comment_count: engagementCount,
   comment_count_display: optionalText,
   comment_count_precision: z.enum(PRECISION_TYPES).default("unavailable"),
@@ -188,33 +182,6 @@ export const SourceSchema = z.object({
   source_id: z.string().regex(/^S_\d{6}$/, "Must match S_000000 format"),
   source_name: z.string().default("Unknown Source"),
   source_type: z.enum(SOURCE_TYPES).default("News Page"),
-});
-
-// ────────────────────────────────────────────────────────────────────────────
-// ANNOTATION schema
-// ────────────────────────────────────────────────────────────────────────────
-
-export const AnnotationSchema = z.object({
-  annotation_id: z.string().regex(/^A_\d{6}$/, "Must match A_000000 format"),
-  comment_id: z
-    .string()
-    .regex(/^C_\d{6}$/, "Must reference a valid comment_id"),
-  sentiment: z.enum(SENTIMENTS).optional(),
-  emotion: z.enum(EMOTIONS).optional(),
-  confidence: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(5)]).optional(),
-  annotator_notes: optionalText,
-});
-
-// ────────────────────────────────────────────────────────────────────────────
-// COLLECTION_LOG schema
-// ────────────────────────────────────────────────────────────────────────────
-
-export const CollectionLogSchema = z.object({
-  collection_id: z.string().min(1),
-  session_start: z.string().min(1),
-  session_end: optionalText,
-  posts_collected: z.number().int().min(0).optional(),
-  notes: optionalText,
 });
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -400,13 +367,30 @@ export const PostFormSchema = z.object({
   reaction_count: engagementCount,
   reaction_count_display: optionalText,
   reaction_count_precision: z.enum(PRECISION_TYPES).default("unavailable"),
-  like_count: engagementCount.default(0),
-  love_count: engagementCount.default(0),
-  haha_count: engagementCount.default(0),
-  angry_count: engagementCount.default(0),
-  sad_count: engagementCount.default(0),
-  wow_count: engagementCount.default(0),
-  care_count: engagementCount.default(0),
+  like_count: engagementCount,
+  like_count_display: optionalText,
+  like_count_precision: z.enum(PRECISION_TYPES).default("unavailable"),
+  love_count: engagementCount,
+  love_count_display: optionalText,
+  love_count_precision: z.enum(PRECISION_TYPES).default("unavailable"),
+  haha_count: engagementCount,
+  haha_count_display: optionalText,
+  haha_count_precision: z.enum(PRECISION_TYPES).default("unavailable"),
+  angry_count: engagementCount,
+  angry_count_display: optionalText,
+  angry_count_precision: z.enum(PRECISION_TYPES).default("unavailable"),
+  sad_count: engagementCount,
+  sad_count_display: optionalText,
+  sad_count_precision: z.enum(PRECISION_TYPES).default("unavailable"),
+  wow_count: engagementCount,
+  wow_count_display: optionalText,
+  wow_count_precision: z.enum(PRECISION_TYPES).default("unavailable"),
+  care_count: engagementCount,
+  care_count_display: optionalText,
+  care_count_precision: z.enum(PRECISION_TYPES).default("unavailable"),
+  share_count: engagementCount,
+  share_count_display: optionalText,
+  share_count_precision: z.enum(PRECISION_TYPES).default("unavailable"),
   comment_count: engagementCount,
   comment_count_display: optionalText,
   comment_count_precision: z.enum(PRECISION_TYPES).default("unavailable"),
