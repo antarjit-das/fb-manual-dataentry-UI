@@ -16,7 +16,33 @@ import {
   PostFormSchema,
   CommentFormSchema,
   ReplyFormSchema,
-} from "./schemas";
+  CanonicalReplySchema,
+  CanonicalCommentSchema,
+  CanonicalDatasetSchema,
+  type CanonicalReply,
+  type ReplyFormData,
+} from "./schemas.ts";
+
+// ────────────────────────────────────────────────────────────────────────────
+// Canonical JSON schema types (Contract for external JSON & Parser output)
+// ────────────────────────────────────────────────────────────────────────────
+
+export type { CanonicalReply };
+export type CanonicalComment = z.infer<typeof CanonicalCommentSchema>;
+export type CanonicalDataset = z.infer<typeof CanonicalDatasetSchema>;
+
+export interface ParseMetrics {
+  commentsDetected: number;
+  repliesDetected: number;
+  mediaOnlyDiscarded: number;
+  ambiguousRecords: number;
+}
+
+export interface ParseResult {
+  dataset: CanonicalDataset;
+  metrics: ParseMetrics;
+  warnings?: string[];
+}
 
 // ────────────────────────────────────────────────────────────────────────────
 // Flat sheet-row types (one type = one row in the corresponding Excel sheet)
@@ -44,13 +70,13 @@ export type CollectionLog = z.infer<typeof CollectionLogSchema>;
 // Form payload types (hierarchical — what the UI sends to the API)
 // ────────────────────────────────────────────────────────────────────────────
 
-/** A single reply as entered in the form (ID may be absent on create). */
-export type ReplyFormData = z.infer<typeof ReplyFormSchema>;
+/** A single reply as entered in the form (recursive tree). */
+export type { ReplyFormData };
 
 /** A single comment with nested replies as entered in the form. */
 export type CommentFormData = z.infer<typeof CommentFormSchema>;
 
-/** The full form payload: one post with N comments, each with M replies. */
+/** The full form payload: one post with N comments, each with recursive M replies. */
 export type PostFormData = z.infer<typeof PostFormSchema>;
 
 // ────────────────────────────────────────────────────────────────────────────

@@ -29,6 +29,7 @@ import type {
   PostSummaryRow,
   PostFormData,
   CommentFormData,
+  ReplyFormData,
 } from "../types";
 import { preparePayload } from "../domain";
 import { generateNextId } from "../ids";
@@ -400,23 +401,58 @@ export async function getPost(postId: string): Promise<PostFormData | null> {
     }
   }
 
-  // Nest replies under their parent comments
-  const comments: CommentFormData[] = allComments.map((c) => ({
-    comment_id: c.comment_id,
-    comment_text: c.comment_text || "",
-    language: c.language || "English",
-    like_count: c.like_count ?? 0,
-    collection_timestamp: c.collection_timestamp,
-    replies: allReplies
-      .filter((r) => r.comment_id === c.comment_id)
-      .map((r) => ({
-        reply_id: r.reply_id,
-        reply_text: r.reply_text || "",
-        language: r.language || "English",
-        like_count: r.like_count ?? 0,
-        collection_timestamp: r.collection_timestamp,
-      })),
-  }));
+  // Reconstruct arbitrary-depth tree from flat comment and reply rows
+  const replyNodes = new Map<string, ReplyFormData & { parentId: string }>();
+  for (const r of allReplies) {
+    const parentId = r.parent_id || (r as any).comment_id || "";
+    replyNodes.set(r.reply_id, {
+      reply_id: r.reply_id,
+      commenter_name: "",
+      reply_text: r.reply_text || "",
+      like_count: r.like_count ?? null,
+      love_count: r.love_count ?? null,
+      haha_count: r.haha_count ?? null,
+      wow_count: r.wow_count ?? null,
+      sad_count: r.sad_count ?? null,
+      angry_count: r.angry_count ?? null,
+      care_count: r.care_count ?? null,
+      collection_timestamp: r.collection_timestamp,
+      replies: [],
+      parentId,
+    });
+  }
+
+  const commentNodes = new Map<string, CommentFormData>();
+  for (const c of allComments) {
+    commentNodes.set(c.comment_id, {
+      comment_id: c.comment_id,
+      commenter_name: "",
+      comment_text: c.comment_text || "",
+      like_count: c.like_count ?? null,
+      love_count: c.love_count ?? null,
+      haha_count: c.haha_count ?? null,
+      wow_count: c.wow_count ?? null,
+      sad_count: c.sad_count ?? null,
+      angry_count: c.angry_count ?? null,
+      care_count: c.care_count ?? null,
+      collection_timestamp: c.collection_timestamp,
+      replies: [],
+    });
+  }
+
+  // Link each reply node to its parent reply or comment
+  for (const rNode of replyNodes.values()) {
+    const { parentId, ...cleanReply } = rNode;
+    if (replyNodes.has(parentId)) {
+      replyNodes.get(parentId)!.replies!.push(cleanReply);
+    } else if (commentNodes.has(parentId)) {
+      commentNodes.get(parentId)!.replies!.push(cleanReply);
+    } else if (allComments.length > 0) {
+      commentNodes.get(allComments[0].comment_id)!.replies!.push(cleanReply);
+    }
+  }
+
+  const comments: CommentFormData[] = Array.from(commentNodes.values());
 
   // Return in PostFormData shape
   return {

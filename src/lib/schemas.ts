@@ -139,9 +139,14 @@ export const CommentSchema = z.object({
   post_id: z.string().regex(/^FB_\d{6}$/, "Must reference a valid post_id"),
   comment_text: z.string().default(""),
   comment_date: optionalDateStr,
-  language: z.enum(LANGUAGES).optional().default("English"),
   is_code_mixed: z.enum(YES_NO).optional(),
   like_count: engagementCount,
+  love_count: engagementCount,
+  haha_count: engagementCount,
+  wow_count: engagementCount,
+  sad_count: engagementCount,
+  angry_count: engagementCount,
+  care_count: engagementCount,
   reply_count: engagementCount,
   collection_timestamp: z.string().min(1, "Collection timestamp is required"),
   notes: optionalText,
@@ -149,20 +154,25 @@ export const CommentSchema = z.object({
 
 // ────────────────────────────────────────────────────────────────────────────
 // REPLY schema
-// One row in the REPLIES sheet. FK → COMMENTS.comment_id, POSTS.post_id
+// One row in the REPLIES sheet. FK parent_id → COMMENTS.comment_id or REPLIES.reply_id
 // ────────────────────────────────────────────────────────────────────────────
 
 export const ReplySchema = z.object({
   reply_id: z.string().regex(/^R_\d{6}$/, "Must match R_000000 format"),
-  comment_id: z
+  parent_id: z
     .string()
-    .regex(/^C_\d{6}$/, "Must reference a valid comment_id"),
+    .regex(/^(C|R)_\d{6}$/, "Must reference a valid parent comment or reply ID"),
   post_id: z.string().regex(/^FB_\d{6}$/, "Must reference a valid post_id"),
   reply_text: z.string().default(""),
   reply_date: optionalDateStr,
-  language: z.enum(LANGUAGES).optional().default("English"),
   is_code_mixed: z.enum(YES_NO).optional(),
   like_count: engagementCount,
+  love_count: engagementCount,
+  haha_count: engagementCount,
+  wow_count: engagementCount,
+  sad_count: engagementCount,
+  angry_count: engagementCount,
+  care_count: engagementCount,
   collection_timestamp: z.string().min(1, "Collection timestamp is required"),
   notes: optionalText,
 });
@@ -206,22 +216,158 @@ export const CollectionLogSchema = z.object({
 });
 
 // ────────────────────────────────────────────────────────────────────────────
-// FORM PAYLOAD — Lenient schemas with default values
+// Language mapping helpers (ISO code <-> UI Controlled Name)
 // ────────────────────────────────────────────────────────────────────────────
 
-export const ReplyFormSchema = z.object({
-  reply_id: z.string().optional(),
-  reply_text: z.string().optional().default(""),
-  language: z.enum(LANGUAGES).optional().default("English"),
-  like_count: engagementCount.default(0),
-  collection_timestamp: optionalText,
+export const ISO_TO_LANGUAGE_MAP: Record<string, (typeof LANGUAGES)[number]> = {
+  en: "English",
+  eng: "English",
+  bn: "Bengali",
+  ben: "Bengali",
+  as: "Assamese",
+  asm: "Assamese",
+  hi: "Hindi",
+  hin: "Hindi",
+  brx: "Bodo",
+  ne: "Other",
+  nep: "Other",
+  mixed: "Mixed",
+  other: "Other",
+};
+
+export const LANGUAGE_TO_ISO_MAP: Record<(typeof LANGUAGES)[number], string> = {
+  English: "en",
+  Bengali: "bn",
+  Assamese: "as",
+  Hindi: "hi",
+  Bodo: "brx",
+  Mixed: "mixed",
+  Other: "other",
+};
+
+/** Convert ISO language code to UI language name. */
+export function isoToLanguage(iso?: string | null): (typeof LANGUAGES)[number] {
+  if (!iso) return "English";
+  const normalized = iso.trim().toLowerCase();
+  if (normalized in ISO_TO_LANGUAGE_MAP) {
+    return ISO_TO_LANGUAGE_MAP[normalized];
+  }
+  // Check if it already matches one of the LANGUAGES names directly
+  const directMatch = LANGUAGES.find(
+    (l) => l.toLowerCase() === normalized
+  );
+  if (directMatch) return directMatch;
+  return "Other";
+}
+
+/** Convert UI language name to ISO code. */
+export function languageToIso(lang?: string | null): string {
+  if (!lang) return "en";
+  const directMatch = LANGUAGES.find(
+    (l) => l.toLowerCase() === lang.trim().toLowerCase()
+  );
+  if (directMatch && directMatch in LANGUAGE_TO_ISO_MAP) {
+    return LANGUAGE_TO_ISO_MAP[directMatch];
+  }
+  return lang.toLowerCase();
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// CANONICAL JSON SCHEMAS (Authoritative contract for Autofill / External JSON)
+// ────────────────────────────────────────────────────────────────────────────
+
+export type CanonicalReply = {
+  commenter_name: string;
+  reply_text: string;
+  like_count?: number | null;
+  love_count?: number | null;
+  haha_count?: number | null;
+  wow_count?: number | null;
+  sad_count?: number | null;
+  angry_count?: number | null;
+  care_count?: number | null;
+  replies?: CanonicalReply[];
+};
+
+export const CanonicalReplySchema: z.ZodType<CanonicalReply> = z.lazy(() =>
+  z.object({
+    commenter_name: z.string().min(1, "commenter_name is required"),
+    reply_text: z.string().min(1, "reply_text is required"),
+    like_count: engagementCount,
+    love_count: engagementCount,
+    haha_count: engagementCount,
+    wow_count: engagementCount,
+    sad_count: engagementCount,
+    angry_count: engagementCount,
+    care_count: engagementCount,
+    replies: z.array(CanonicalReplySchema).default([]),
+  })
+);
+
+export const CanonicalCommentSchema = z.object({
+  commenter_name: z.string().min(1, "commenter_name is required"),
+  comment_text: z.string().min(1, "comment_text is required"),
+  like_count: engagementCount,
+  love_count: engagementCount,
+  haha_count: engagementCount,
+  wow_count: engagementCount,
+  sad_count: engagementCount,
+  angry_count: engagementCount,
+  care_count: engagementCount,
+  replies: z.array(CanonicalReplySchema).default([]),
 });
+
+export const CanonicalDatasetSchema = z.object({
+  comments: z.array(CanonicalCommentSchema),
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// FORM PAYLOAD — Recursive schemas with 7 reactions
+// ────────────────────────────────────────────────────────────────────────────
+
+export type ReplyFormData = {
+  reply_id?: string;
+  commenter_name: string;
+  reply_text: string;
+  like_count?: number | null;
+  love_count?: number | null;
+  haha_count?: number | null;
+  wow_count?: number | null;
+  sad_count?: number | null;
+  angry_count?: number | null;
+  care_count?: number | null;
+  collection_timestamp?: string;
+  replies?: ReplyFormData[];
+};
+
+export const ReplyFormSchema: z.ZodType<ReplyFormData> = z.lazy(() =>
+  z.object({
+    reply_id: z.string().optional(),
+    commenter_name: z.string().optional().default(""),
+    reply_text: z.string().optional().default(""),
+    like_count: engagementCount,
+    love_count: engagementCount,
+    haha_count: engagementCount,
+    wow_count: engagementCount,
+    sad_count: engagementCount,
+    angry_count: engagementCount,
+    care_count: engagementCount,
+    collection_timestamp: optionalText,
+    replies: z.array(ReplyFormSchema).default([]),
+  })
+);
 
 export const CommentFormSchema = z.object({
   comment_id: z.string().optional(),
+  commenter_name: z.string().optional().default(""),
   comment_text: z.string().optional().default(""),
-  language: z.enum(LANGUAGES).optional().default("English"),
-  like_count: engagementCount.default(0),
+  like_count: engagementCount,
+  love_count: engagementCount,
+  haha_count: engagementCount,
+  wow_count: engagementCount,
+  sad_count: engagementCount,
+  angry_count: engagementCount,
+  care_count: engagementCount,
   collection_timestamp: optionalText,
   replies: z.array(ReplyFormSchema).default([]),
 });

@@ -10,8 +10,8 @@ import type {
   Post,
   Comment,
   Reply,
-} from "./types";
-import { generateNextId, generateBatchIds, isValidId } from "./ids";
+} from "./types.ts";
+import { generateNextId, generateBatchIds, isValidId } from "./ids.ts";
 
 // ────────────────────────────────────────────────────────────────────────────
 // Numeric field sanitization
@@ -76,7 +76,7 @@ export interface RelationshipError {
 
 export function validateRelationships(
   postId: string,
-  comments: Array<{ comment_id?: string; replies: Array<{ reply_id?: string }> }>
+  comments: Array<{ comment_id?: string; replies?: any[] }>
 ): RelationshipError[] {
   const errors: RelationshipError[] = [];
 
@@ -89,6 +89,23 @@ export function validateRelationships(
     return errors;
   }
 
+  function validateReplyTree(replies: any[] | undefined, cIdx: number, parentId: string) {
+    if (!replies) return;
+    replies.forEach((reply, rIdx) => {
+      if (reply.reply_id && !isValidId("reply", reply.reply_id)) {
+        errors.push({
+          entity: "reply",
+          index: rIdx,
+          parentIndex: cIdx,
+          message: `Reply ${rIdx + 1} under parent ${parentId} has an invalid reply_id format: "${reply.reply_id}"`,
+        });
+      }
+      if (reply.replies) {
+        validateReplyTree(reply.replies, cIdx, reply.reply_id || `Reply ${rIdx + 1}`);
+      }
+    });
+  }
+
   comments.forEach((comment, cIdx) => {
     if (comment.comment_id && !isValidId("comment", comment.comment_id)) {
       errors.push({
@@ -98,16 +115,7 @@ export function validateRelationships(
       });
     }
 
-    comment.replies.forEach((reply, rIdx) => {
-      if (reply.reply_id && !isValidId("reply", reply.reply_id)) {
-        errors.push({
-          entity: "reply",
-          index: rIdx,
-          parentIndex: cIdx,
-          message: `Reply ${rIdx + 1} under Comment ${cIdx + 1} has an invalid reply_id format: "${reply.reply_id}"`,
-        });
-      }
-    });
+    validateReplyTree(comment.replies, cIdx, comment.comment_id || `Comment ${cIdx + 1}`);
   });
 
   return errors;
@@ -121,6 +129,75 @@ export interface PreparedPayload {
   post: Post;
   comments: Comment[];
   replies: Reply[];
+}
+
+function countRepliesNeedingIds(replies?: ReplyFormData[]): number {
+  if (!replies || replies.length === 0) return 0;
+  let count = 0;
+  for (const r of replies) {
+    if (!r.reply_id || !isValidId("reply", r.reply_id)) {
+      count++;
+    }
+    count += countRepliesNeedingIds(r.replies);
+  }
+  return count;
+}
+
+function countTotalDescendantReplies(replies?: ReplyFormData[]): number {
+  if (!replies || replies.length === 0) return 0;
+  let count = 0;
+  for (const r of replies) {
+    count += 1 + countTotalDescendantReplies(r.replies);
+  }
+  return count;
+}
+
+function processRecursiveReplies(
+  replyForms: ReplyFormData[] | undefined,
+  parentId: string,
+  postId: string,
+  timestamp: string,
+  newReplyIds: string[],
+  idState: { nextIdx: number },
+  outReplies: Reply[]
+) {
+  if (!replyForms || replyForms.length === 0) return;
+
+  for (const rForm of replyForms) {
+    const replyId =
+      rForm.reply_id && isValidId("reply", rForm.reply_id)
+        ? rForm.reply_id
+        : newReplyIds[idState.nextIdx++];
+
+    outReplies.push({
+      reply_id: replyId,
+      parent_id: parentId,
+      post_id: postId,
+      reply_text: rForm.reply_text || "",
+      reply_date: undefined,
+      is_code_mixed: undefined,
+      like_count: rForm.like_count ?? null,
+      love_count: rForm.love_count ?? null,
+      haha_count: rForm.haha_count ?? null,
+      wow_count: rForm.wow_count ?? null,
+      sad_count: rForm.sad_count ?? null,
+      angry_count: rForm.angry_count ?? null,
+      care_count: rForm.care_count ?? null,
+      collection_timestamp: rForm.collection_timestamp || timestamp,
+      notes: undefined,
+    });
+
+    // Recursively process any nested children
+    processRecursiveReplies(
+      rForm.replies,
+      replyId,
+      postId,
+      timestamp,
+      newReplyIds,
+      idState,
+      outReplies
+    );
+  }
 }
 
 export function preparePayload(
@@ -182,21 +259,16 @@ export function preparePayload(
   );
   let newCommentIdx = 0;
 
-  // ── Count total replies needing IDs ──────────────────────────────────
+  // ── Count total replies needing IDs recursively ─────────────────────
   const allRepliesNeedingIds = formData.comments.reduce((count, c) => {
-    return (
-      count +
-      c.replies.filter(
-        (r) => !r.reply_id || !isValidId("reply", r.reply_id)
-      ).length
-    );
+    return count + countRepliesNeedingIds(c.replies);
   }, 0);
   const newReplyIds = generateBatchIds(
     "reply",
     existingReplyIds,
     allRepliesNeedingIds
   );
-  let newReplyIdx = 0;
+  const replyIdState = { nextIdx: 0 };
 
   // ── Build flat comment and reply arrays ──────────────────────────────
   const comments: Comment[] = [];
@@ -213,33 +285,29 @@ export function preparePayload(
       post_id: postId,
       comment_text: commentForm.comment_text || "",
       comment_date: undefined,
-      language: commentForm.language || "English",
       is_code_mixed: undefined,
-      like_count: commentForm.like_count ?? 0,
-      reply_count: 0,
+      like_count: commentForm.like_count ?? null,
+      love_count: commentForm.love_count ?? null,
+      haha_count: commentForm.haha_count ?? null,
+      wow_count: commentForm.wow_count ?? null,
+      sad_count: commentForm.sad_count ?? null,
+      angry_count: commentForm.angry_count ?? null,
+      care_count: commentForm.care_count ?? null,
+      reply_count: countTotalDescendantReplies(commentForm.replies),
       collection_timestamp: commentForm.collection_timestamp || timestamp,
       notes: undefined,
     });
 
-    for (const replyForm of commentForm.replies) {
-      const replyId =
-        replyForm.reply_id && isValidId("reply", replyForm.reply_id)
-          ? replyForm.reply_id
-          : newReplyIds[newReplyIdx++];
-
-      replies.push({
-        reply_id: replyId,
-        comment_id: commentId,
-        post_id: postId,
-        reply_text: replyForm.reply_text || "",
-        reply_date: undefined,
-        language: replyForm.language || "English",
-        is_code_mixed: undefined,
-        like_count: replyForm.like_count ?? 0,
-        collection_timestamp: replyForm.collection_timestamp || timestamp,
-        notes: undefined,
-      });
-    }
+    // Recursively process all replies under this comment
+    processRecursiveReplies(
+      commentForm.replies,
+      commentId,
+      postId,
+      timestamp,
+      newReplyIds,
+      replyIdState,
+      replies
+    );
   }
 
   return { post, comments, replies };

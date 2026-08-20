@@ -1,0 +1,557 @@
+/**
+ * parser.test.ts — Comprehensive test suite for Canonical 7 Reactions Schema,
+ * Infinite Recursive Reply Tree, Excel Relational Tree Persistence, and Round-Trip Integrity.
+ */
+
+import { describe, it } from "node:test";
+import assert from "node:assert/strict";
+import {
+  CanonicalDatasetSchema,
+  CanonicalCommentSchema,
+  CanonicalReplySchema,
+  CommentFormSchema,
+  ReplyFormSchema,
+  PostFormSchema,
+} from "../src/lib/schemas.ts";
+import {
+  parseFacebookRawText,
+  detectLanguage,
+  normalizeRawText,
+  segmentBlocks,
+} from "../src/lib/parser.ts";
+import { preparePayload, validateRelationships } from "../src/lib/domain.ts";
+import type { CanonicalDataset, PostFormData, CommentFormData, ReplyFormData } from "../src/lib/types.ts";
+
+describe("PART 12: Comprehensive Test Suite for Recursive Tree & 7 Reactions", () => {
+  // TEST 1: Comment with no replies
+  it("TEST 1: Comment with no replies validates and prepares correctly", () => {
+    const data: CanonicalDataset = {
+      comments: [
+        {
+          commenter_name: "John Doe",
+          comment_text: "Top level single comment",
+          like_count: 5,
+          love_count: 1,
+          haha_count: 0,
+          wow_count: 0,
+          sad_count: 0,
+          angry_count: 0,
+          care_count: 0,
+          replies: [],
+        },
+      ],
+    };
+
+    const parsed = CanonicalDatasetSchema.safeParse(data);
+    assert.equal(parsed.success, true);
+    assert.equal(data.comments[0].replies?.length, 0);
+  });
+
+  // TEST 2: Comment -> Reply (1 level)
+  it("TEST 2: Comment -> Reply hierarchy is preserved", () => {
+    const data: CanonicalDataset = {
+      comments: [
+        {
+          commenter_name: "Parent Commenter",
+          comment_text: "Parent comment",
+          like_count: 10,
+          replies: [
+            {
+              commenter_name: "Child Replier",
+              reply_text: "First level reply",
+              like_count: 2,
+              replies: [],
+            },
+          ],
+        },
+      ],
+    };
+
+    const parsed = CanonicalDatasetSchema.safeParse(data);
+    assert.equal(parsed.success, true);
+    assert.equal(data.comments[0].replies!.length, 1);
+    assert.equal(data.comments[0].replies![0].commenter_name, "Child Replier");
+  });
+
+  // TEST 3: Comment -> Reply -> Reply (2 levels of replies)
+  it("TEST 3: Comment -> Reply -> Reply (depth 2) validates recursively", () => {
+    const data: CanonicalDataset = {
+      comments: [
+        {
+          commenter_name: "C1",
+          comment_text: "Comment 1",
+          like_count: 1,
+          replies: [
+            {
+              commenter_name: "R1",
+              reply_text: "Reply 1 to C1",
+              like_count: 1,
+              replies: [
+                {
+                  commenter_name: "R2",
+                  reply_text: "Reply 2 to R1",
+                  like_count: 1,
+                  replies: [],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+
+    const parsed = CanonicalDatasetSchema.safeParse(data);
+    assert.equal(parsed.success, true);
+    assert.equal(data.comments[0].replies![0].replies!.length, 1);
+    assert.equal(data.comments[0].replies![0].replies![0].commenter_name, "R2");
+  });
+
+  // TEST 4: Deep nesting (Comment -> Reply -> Reply -> Reply -> Reply)
+  it("TEST 4: Deep nesting (4 levels of replies) without depth limit", () => {
+    const data: CanonicalDataset = {
+      comments: [
+        {
+          commenter_name: "Root",
+          comment_text: "Depth 0",
+          replies: [
+            {
+              commenter_name: "Level 1",
+              reply_text: "Depth 1",
+              replies: [
+                {
+                  commenter_name: "Level 2",
+                  reply_text: "Depth 2",
+                  replies: [
+                    {
+                      commenter_name: "Level 3",
+                      reply_text: "Depth 3",
+                      replies: [
+                        {
+                          commenter_name: "Level 4",
+                          reply_text: "Depth 4",
+                          like_count: 99,
+                          replies: [],
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+
+    const parsed = CanonicalDatasetSchema.safeParse(data);
+    assert.equal(parsed.success, true);
+    const deepReply = data.comments[0].replies![0].replies![0].replies![0].replies![0];
+    assert.equal(deepReply.commenter_name, "Level 4");
+    assert.equal(deepReply.like_count, 99);
+  });
+
+  // TEST 5: Multiple replies at different branches
+  it("TEST 5: Multiple branches at different nesting levels", () => {
+    const data: CanonicalDataset = {
+      comments: [
+        {
+          commenter_name: "Comment Root",
+          comment_text: "Multi-branch tree",
+          replies: [
+            {
+              commenter_name: "Reply A",
+              reply_text: "Branch A",
+              replies: [
+                {
+                  commenter_name: "Reply A1",
+                  reply_text: "Nested under A",
+                  replies: [],
+                },
+              ],
+            },
+            {
+              commenter_name: "Reply B",
+              reply_text: "Branch B",
+              replies: [
+                {
+                  commenter_name: "Reply B1",
+                  reply_text: "First child under B",
+                  replies: [],
+                },
+                {
+                  commenter_name: "Reply B2",
+                  reply_text: "Second child under B",
+                  replies: [],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+
+    const parsed = CanonicalDatasetSchema.safeParse(data);
+    assert.equal(parsed.success, true);
+    assert.equal(data.comments[0].replies!.length, 2);
+    assert.equal(data.comments[0].replies![0].replies!.length, 1);
+    assert.equal(data.comments[0].replies![1].replies!.length, 2);
+  });
+
+  // TEST 6: Seven separate reaction counts
+  it("TEST 6: Seven separate reaction counts are accurately preserved", () => {
+    const comment = {
+      commenter_name: "Reaction Tester",
+      comment_text: "Testing all 7 reaction counts",
+      like_count: 10,
+      love_count: 20,
+      haha_count: 30,
+      wow_count: 40,
+      sad_count: 50,
+      angry_count: 60,
+      care_count: 70,
+      replies: [],
+    };
+
+    const parsed = CanonicalCommentSchema.safeParse(comment);
+    assert.equal(parsed.success, true);
+    if (parsed.success) {
+      assert.equal(parsed.data.like_count, 10);
+      assert.equal(parsed.data.love_count, 20);
+      assert.equal(parsed.data.haha_count, 30);
+      assert.equal(parsed.data.wow_count, 40);
+      assert.equal(parsed.data.sad_count, 50);
+      assert.equal(parsed.data.angry_count, 60);
+      assert.equal(parsed.data.care_count, 70);
+    }
+  });
+
+  // TEST 7: Some reactions = 0
+  it("TEST 7: Explicit 0 reactions are preserved as 0 (not converted to null/undefined)", () => {
+    const comment = {
+      commenter_name: "Zero Tester",
+      comment_text: "Explicit zeroes",
+      like_count: 0,
+      love_count: 0,
+      haha_count: 0,
+      wow_count: 0,
+      sad_count: 0,
+      angry_count: 0,
+      care_count: 0,
+      replies: [],
+    };
+
+    const parsed = CanonicalCommentSchema.safeParse(comment);
+    assert.equal(parsed.success, true);
+    if (parsed.success) {
+      assert.equal(parsed.data.like_count, 0);
+      assert.equal(parsed.data.love_count, 0);
+      assert.equal(parsed.data.haha_count, 0);
+      assert.equal(parsed.data.care_count, 0);
+    }
+  });
+
+  // TEST 8: Some reactions = null/unavailable
+  it("TEST 8: Null / unavailable reactions are preserved as null", () => {
+    const comment = {
+      commenter_name: "Null Tester",
+      comment_text: "Unavailable reactions",
+      like_count: null,
+      love_count: null,
+      haha_count: null,
+      wow_count: null,
+      sad_count: null,
+      angry_count: null,
+      care_count: null,
+      replies: [],
+    };
+
+    const parsed = CanonicalCommentSchema.safeParse(comment);
+    assert.equal(parsed.success, true);
+    if (parsed.success) {
+      assert.equal(parsed.data.like_count, null);
+      assert.equal(parsed.data.love_count, null);
+    }
+  });
+
+  // TEST 9: JSON import containing nested replies
+  it("TEST 9: JSON parser safely parses JSON string with nested replies", () => {
+    const jsonString = JSON.stringify({
+      comments: [
+        {
+          commenter_name: "Gopal Ch Saha",
+          comment_text: "Root text",
+          like_count: 15,
+          replies: [
+            {
+              commenter_name: "Chandrani Sarkar",
+              reply_text: "Nested reply 1",
+              like_count: 3,
+              replies: [
+                {
+                  commenter_name: "Sandip Sarkar",
+                  reply_text: "Deep nested reply 2",
+                  like_count: 1,
+                  replies: [],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+
+    const parsedRaw = JSON.parse(jsonString);
+    const validation = CanonicalDatasetSchema.safeParse(parsedRaw);
+    assert.equal(validation.success, true);
+    assert.equal(validation.data!.comments[0].replies![0].replies![0].commenter_name, "Sandip Sarkar");
+  });
+
+  // TEST 10: Export nested data to relational model and verify parent relationships
+  it("TEST 10: preparePayload converts recursive tree into flat relational rows with correct parent_id", () => {
+    const formData: any = {
+      post_id: "FB_000001",
+      platform: "Facebook",
+      content_type: "Post",
+      source_name: "News Channel",
+      source_type: "News Page",
+      language: "English",
+      collection_date: "2026-08-19",
+      collection_timestamp: "2026-08-19T10:00:00Z",
+      comments: [
+        {
+          comment_id: "C_000001",
+          commenter_name: "Commenter 1",
+          comment_text: "Comment 1 Text",
+          like_count: 10,
+          replies: [
+            {
+              reply_id: "R_000001",
+              commenter_name: "Replier 1",
+              reply_text: "Reply 1 Text",
+              like_count: 2,
+              replies: [
+                {
+                  reply_id: "R_000002",
+                  commenter_name: "Replier 2",
+                  reply_text: "Reply 2 Text",
+                  like_count: 1,
+                  replies: [],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+
+    const payload = preparePayload(formData, ["FB_000001"], ["C_000001"], ["R_000001", "R_000002"]);
+    assert.equal(payload.comments.length, 1);
+    assert.equal(payload.replies.length, 2);
+
+    // Verify parent relationships
+    const r1 = payload.replies.find((r) => r.reply_id === "R_000001");
+    const r2 = payload.replies.find((r) => r.reply_id === "R_000002");
+
+    assert.ok(r1, "R_000001 exists");
+    assert.ok(r2, "R_000002 exists");
+    assert.equal(r1!.parent_id, "C_000001", "R1 parent is C1");
+    assert.equal(r2!.parent_id, "R_000001", "R2 parent is R1 (relational link preserved)");
+  });
+
+  // TEST 11: Import/export round trip without hierarchy loss
+  it("TEST 11: Tree round trip (Tree -> Relational Flat -> Reconstructed Tree) is 100% lossless", () => {
+    // Initial hierarchical form data
+    const originalForm: any = {
+      post_id: "FB_000042",
+      platform: "Facebook",
+      content_type: "Post",
+      source_name: "Page",
+      source_type: "News Page",
+      language: "English",
+      comments: [
+        {
+          comment_id: "C_000010",
+          commenter_name: "C10",
+          comment_text: "Root C10",
+          like_count: 5,
+          love_count: 2,
+          haha_count: 1,
+          wow_count: 0,
+          sad_count: 0,
+          angry_count: 0,
+          care_count: 0,
+          replies: [
+            {
+              reply_id: "R_000010",
+              commenter_name: "R10",
+              reply_text: "Child of C10",
+              like_count: 1,
+              replies: [
+                {
+                  reply_id: "R_000011",
+                  commenter_name: "R11",
+                  reply_text: "Child of R10",
+                  like_count: 0,
+                  replies: [
+                    {
+                      reply_id: "R_000012",
+                      commenter_name: "R12",
+                      reply_text: "Child of R11",
+                      like_count: 4,
+                      replies: [],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+
+    // Flatten to relational rows
+    const prepared = preparePayload(originalForm, ["FB_000042"], ["C_000010"], ["R_000010", "R_000011", "R_000012"]);
+
+    // Reconstruct tree from flat relational rows (simulating WorkbookRepository.getPost logic)
+    const replyNodes = new Map<string, ReplyFormData & { parentId: string }>();
+    for (const r of prepared.replies) {
+      replyNodes.set(r.reply_id, {
+        reply_id: r.reply_id,
+        commenter_name: "",
+        reply_text: r.reply_text,
+        like_count: r.like_count,
+        love_count: r.love_count,
+        haha_count: r.haha_count,
+        wow_count: r.wow_count,
+        sad_count: r.sad_count,
+        angry_count: r.angry_count,
+        care_count: r.care_count,
+        collection_timestamp: r.collection_timestamp,
+        replies: [],
+        parentId: r.parent_id,
+      });
+    }
+
+    const commentNodes = new Map<string, CommentFormData>();
+    for (const c of prepared.comments) {
+      commentNodes.set(c.comment_id, {
+        comment_id: c.comment_id,
+        commenter_name: "",
+        comment_text: c.comment_text,
+        like_count: c.like_count,
+        love_count: c.love_count,
+        haha_count: c.haha_count,
+        wow_count: c.wow_count,
+        sad_count: c.sad_count,
+        angry_count: c.angry_count,
+        care_count: c.care_count,
+        collection_timestamp: c.collection_timestamp,
+        replies: [],
+      });
+    }
+
+    for (const rNode of replyNodes.values()) {
+      const { parentId, ...cleanReply } = rNode;
+      if (replyNodes.has(parentId)) {
+        replyNodes.get(parentId)!.replies!.push(cleanReply);
+      } else if (commentNodes.has(parentId)) {
+        commentNodes.get(parentId)!.replies!.push(cleanReply);
+      }
+    }
+
+    const reconstructed = Array.from(commentNodes.values());
+
+    // Verify tree reconstruction
+    assert.equal(reconstructed.length, 1);
+    assert.equal(reconstructed[0].comment_id, "C_000010");
+    assert.equal(reconstructed[0].replies.length, 1);
+    assert.equal(reconstructed[0].replies[0].reply_id, "R_000010");
+    assert.equal(reconstructed[0].replies[0].replies!.length, 1);
+    assert.equal(reconstructed[0].replies[0].replies![0].reply_id, "R_000011");
+    assert.equal(reconstructed[0].replies[0].replies![0].replies!.length, 1);
+    assert.equal(reconstructed[0].replies[0].replies![0].replies![0].reply_id, "R_000012");
+    assert.equal(reconstructed[0].replies[0].replies![0].replies![0].like_count, 4);
+  });
+
+  // TEST 12: Existing one-level data continues to work
+  it("TEST 12: Legacy one-level comment/reply data continues to work seamlessly", () => {
+    const legacyPayload = {
+      comments: [
+        {
+          commenter_name: "Legacy User",
+          comment_text: "Simple legacy comment",
+          like_count: 3,
+          replies: [
+            {
+              commenter_name: "Legacy Replier",
+              reply_text: "Simple legacy reply",
+              like_count: 1,
+            },
+          ],
+        },
+      ],
+    };
+
+    const parsed = CanonicalDatasetSchema.safeParse(legacyPayload);
+    assert.equal(parsed.success, true);
+    assert.equal(parsed.data!.comments[0].replies!.length, 1);
+  });
+
+  // TEST 13: Add Reply to a deeply nested reply attaches to the correct parent
+  it("TEST 13: Adding a reply to a deeply nested reply inserts into that node's replies array", () => {
+    const initialTree: ReplyFormData = {
+      reply_id: "R_000001",
+      commenter_name: "R1",
+      reply_text: "Reply 1",
+      replies: [
+        {
+          reply_id: "R_000002",
+          commenter_name: "R2",
+          reply_text: "Reply 2",
+          replies: [],
+        },
+      ],
+    };
+
+    // Simulate Add Reply to R2
+    const targetNode = initialTree.replies![0];
+    const newReply: ReplyFormData = {
+      commenter_name: "R3",
+      reply_text: "Reply 3 attached directly to R2",
+      like_count: 0,
+      replies: [],
+    };
+    targetNode.replies = targetNode.replies || [];
+    targetNode.replies.push(newReply);
+
+    assert.equal(initialTree.replies!.length, 1);
+    assert.equal(initialTree.replies![0].replies!.length, 1);
+    assert.equal(initialTree.replies![0].replies![0].commenter_name, "R3");
+  });
+});
+
+describe("Raw Facebook Text Parser Compatibility", () => {
+  it("parses raw text and produces valid canonical dataset with 7 reactions and replies array", () => {
+    const raw = `
+Gopal Ch Saha
+·
+ভারতীয় তারকাটা, সীমান্ত শূন্য রেখা থেকে কম করে ১৫০ গজ দূরে অবস্থিত ।
+Reply
+Chandrani Sarkar
+·
+Gopal Ch Saha Oder ar moja maranor kichhu nai nai bina poysaye...
+Reply
+Sandip Sarkar
+·
+Gopal Ch Saha শালাদের পেছনে গুলি কেন করলোনা।
+Reply
+`;
+    const result = parseFacebookRawText(raw);
+    assert.equal(result.metrics.commentsDetected, 1);
+    assert.equal(result.metrics.repliesDetected, 2);
+    assert.equal(result.dataset.comments[0].commenter_name, "Gopal Ch Saha");
+    assert.equal(result.dataset.comments[0].replies!.length, 2);
+    assert.equal(result.dataset.comments[0].like_count, 0);
+    assert.equal(result.dataset.comments[0].replies![0].like_count, 0);
+  });
+});

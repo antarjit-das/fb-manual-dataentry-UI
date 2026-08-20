@@ -15,10 +15,11 @@ import { useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PostFormSchema, CONTENT_TYPES, SOURCE_TYPES, LANGUAGES } from "@/lib/schemas";
-import type { PostFormData, SaveResult } from "@/lib/types";
+import type { PostFormData, SaveResult, CommentFormData } from "@/lib/types";
 import { todayDateStr } from "@/lib/domain";
 import StatusBar from "@/components/common/StatusBar";
 import CommentCard from "./CommentCard";
+import AutofillSection from "./AutofillSection";
 
 interface PostFormProps {
   initialData?: PostFormData;
@@ -62,6 +63,7 @@ export default function PostForm({
     register,
     control,
     handleSubmit,
+    setValue,
     watch,
     formState: { errors },
   } = useForm<PostFormData>({
@@ -74,18 +76,36 @@ export default function PostForm({
     name: "comments",
   });
 
+  function countAllReplies(replies?: any[]): number {
+    if (!replies) return 0;
+    return replies.reduce((sum: number, r: any) => sum + 1 + countAllReplies(r.replies), 0);
+  }
+
   const watchedComments = watch("comments") || [];
   const totalReplies = watchedComments.reduce(
-    (sum, c) => sum + (c.replies?.length || 0),
+    (sum: number, c: any) => sum + countAllReplies(c.replies),
     0
   );
 
   const handleAddComment = () => {
     append({
+      commenter_name: "",
       comment_text: "",
-      language: "English",
       like_count: 0,
+      love_count: 0,
+      haha_count: 0,
+      wow_count: 0,
+      sad_count: 0,
+      angry_count: 0,
+      care_count: 0,
       replies: [],
+    });
+  };
+
+  const handleAutofillComments = (importedComments: CommentFormData[]) => {
+    setValue("comments", importedComments, {
+      shouldDirty: true,
+      shouldValidate: true,
     });
   };
 
@@ -125,6 +145,9 @@ export default function PostForm({
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <StatusBar status={saveStatus} result={saveResult} error={errorMessage} />
+
+      {/* Autofill Pipeline (Canonical JSON supply & Raw Parser) */}
+      <AutofillSection onAutofill={handleAutofillComments} />
 
       {/* 1. Identity & Post Details */}
       <section className="form-section">
