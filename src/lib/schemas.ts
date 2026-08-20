@@ -36,16 +36,6 @@ export const LANGUAGES = [
   "Other",
 ] as const;
 
-export const YES_NO = ["Yes", "No"] as const;
-
-export const CONTENT_STANCES = [
-  "Supportive",
-  "Opposed",
-  "Neutral/Informational",
-  "Mixed",
-  "Unclear",
-] as const;
-
 // Future annotation enums (MVP creates the structure, not the workflow)
 export const SENTIMENTS = [
   "Positive",
@@ -123,16 +113,8 @@ export const PostSchema = z.object({
   collection_timestamp: z.string().default(""),
   language: z.enum(LANGUAGES).default("English"),
 
-  // Classification (optional in stored sheet model)
-  is_code_mixed: z.enum(YES_NO).optional(),
-  topic: optionalText,
-  subtopic: optionalText,
-  content_stance: z.enum(CONTENT_STANCES).optional(),
-
   // Content
   post_text: optionalText,
-  transcript: optionalText,
-  media_description: optionalText,
 
   // Engagement metrics & Post-Level Precision
   view_count: engagementCount,
@@ -165,7 +147,6 @@ export const CommentSchema = z.object({
   commenter_name: optionalText,
   comment_text: z.string().default(""),
   comment_date: optionalDateStr,
-  is_code_mixed: z.enum(YES_NO).optional(),
   like_count: engagementCount,
   love_count: engagementCount,
   haha_count: engagementCount,
@@ -192,7 +173,6 @@ export const ReplySchema = z.object({
   commenter_name: optionalText,
   reply_text: z.string().default(""),
   reply_date: optionalDateStr,
-  is_code_mixed: z.enum(YES_NO).optional(),
   like_count: engagementCount,
   love_count: engagementCount,
   haha_count: engagementCount,
