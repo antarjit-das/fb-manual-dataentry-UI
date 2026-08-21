@@ -1,4 +1,4 @@
-# Facebook Data Collector
+# Dattix
 
 A local-first research utility for collecting, reviewing, structuring, and storing publicly accessible Facebook post and comment data for academic and non-profit research.
 
@@ -28,9 +28,9 @@ A local-first research utility for collecting, reviewing, structuring, and stori
 
 ## About
 
-### What is Facebook Data Collector?
+### What is Dattix?
 
-Facebook Data Collector is a local-first web application that turns researcher-provided Facebook post and comment text into a structured Excel dataset.
+Dattix is a local-first web application that turns researcher-provided Facebook post and comment text into a structured Excel dataset.
 
 It supports:
 
@@ -45,7 +45,7 @@ The project is intended for qualitative, quantitative, linguistic, and computati
 
 ### Purpose
 
-The tool addresses a practical research problem: copied social-media text is often mixed with interface text and is difficult to organize consistently. Facebook Data Collector parses that input, reconstructs comment/reply relationships, preserves original text, and stores the result in a structured workbook.
+The tool addresses a practical research problem: copied social-media text is often mixed with interface text and is difficult to organize consistently. Dattix parses that input, reconstructs comment/reply relationships, preserves original text, and stores the result in a structured workbook.
 
 ### Intended Users
 
@@ -468,8 +468,8 @@ If external scripts or LLMs are used to prepare Canonical JSON, researchers shou
 ### Clone
 
 ```bash
-git clone https://github.com/antarjit-das/fb-manual-dataentry-UI.git
-cd facebook-data-entry
+git clone https://github.com/antarjit-das/dattix.git
+cd dattix
 ```
 
 ### Install Dependencies
@@ -656,12 +656,12 @@ Users remain responsible for applicable intellectual-property, privacy, platform
 If you use this tool in your academic research:
 
 ```bibtex
-@misc{das2026facebookdatacollector,
+@misc{das2026dattix,
   author = {Das, Antarjit},
-  title = {Facebook Data Collector: A Local-First Research Utility for Hierarchical Social Media Discourse Analysis},
+  title = {Dattix: A Local-First Research Utility for Hierarchical Social Media Discourse Analysis},
   year = {2026},
   publisher = {GitHub},
-  howpublished = {\url{https://github.com/antarjit-das/fb-manual-dataentry-UI}}
+  howpublished = {\url{https://github.com/antarjit-das/dattix}}
 }
 ```
 

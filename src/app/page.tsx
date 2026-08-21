@@ -6,7 +6,7 @@
  * Minimalist dark design with clean typography and understated cards.
  */
 
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import type { DataSummary, PostSummaryRow } from "@/lib/types";
 
@@ -21,43 +21,48 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    let isMounted = true;
-    const load = async () => {
-      setError(null);
-      try {
-        const [sumRes, postsRes] = await Promise.all([
-          fetch("/api/summary"),
-          fetch("/api/posts"),
-        ]);
+  const fetchData = useCallback(async (signal?: AbortSignal) => {
+    await Promise.resolve();
+    if (signal?.aborted) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const [sumRes, postsRes] = await Promise.all([
+        fetch("/api/summary", { signal }),
+        fetch("/api/posts", { signal }),
+      ]);
 
-        if (!sumRes.ok || !postsRes.ok) {
-          throw new Error("Failed to load dataset records from the local workbook.");
-        }
-
-        const sumJson = await sumRes.json();
-        const postsJson = await postsRes.json();
-
-        if (isMounted) {
-          setSummary(sumJson);
-          setPosts(postsJson);
-        }
-      } catch (err: any) {
-        if (isMounted) {
-          setError(err.message || "Failed to load dashboard data");
-        }
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
+      if (!sumRes.ok || !postsRes.ok) {
+        throw new Error("Failed to load dataset records from the local workbook.");
       }
-    };
 
-    load();
-    return () => {
-      isMounted = false;
-    };
+      const sumJson = await sumRes.json();
+      const postsJson = await postsRes.json();
+
+      if (signal?.aborted) return;
+      setSummary(sumJson);
+      setPosts(postsJson);
+    } catch (err: unknown) {
+      if (signal?.aborted) return;
+      const message = err instanceof Error ? err.message : "Failed to load dashboard data";
+      setError(message);
+    } finally {
+      if (!signal?.aborted) {
+        setLoading(false);
+      }
+    }
   }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => {
+      void fetchData(controller.signal);
+    }, 0);
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [fetchData]);
 
   const formatLastSaved = (ts: string | null) => {
     if (!ts) return "—";
@@ -82,7 +87,7 @@ export default function HomePage() {
         <div style={{ display: "flex", gap: "0.5rem" }}>
           <button
             type="button"
-            onClick={fetchData}
+            onClick={() => void fetchData()}
             disabled={loading}
             className="btn btn-secondary btn-sm"
           >

@@ -1,5 +1,5 @@
 /**
- * schemas.ts — Canonical Zod schemas for every entity in the Facebook Data Collector.
+ * schemas.ts — Canonical Zod schemas for every entity in Dattix.
  *
  * This file is the SINGLE SOURCE OF TRUTH for field definitions, controlled values,
  * and validation rules. All other layers (persistence, API, UI) import from here.
