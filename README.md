@@ -660,8 +660,8 @@ If you use this tool in your academic research:
   author = {Das, Antarjit},
   title = {Dattix: A Local-First Research Utility for Hierarchical Social Media Discourse Analysis},
   year = {2026},
-  publisher = {GitHub},
-  howpublished = {\url{https://github.com/antarjit-das/dattix}}
+  publisher = {https://github.com/antarjit-das},
+  howpublished = {\url{https://github.com/antarjit-das/dattix-fb-data-research-utility}}
 }
 ```
 
