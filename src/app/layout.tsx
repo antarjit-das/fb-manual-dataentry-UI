@@ -20,7 +20,7 @@ export default function RootLayout({
           <div className="container header-inner">
             <Link href="/" className="header-brand">
               <span className="brand-badge">Research</span>
-              <span className="header-title">Dattix</span>
+              <span className="header-title">Dattix - A Local-First Hierarchical Research Data Collector</span>
             </Link>
             <nav className="header-nav">
               <Link href="/" className="btn btn-outline btn-sm">
