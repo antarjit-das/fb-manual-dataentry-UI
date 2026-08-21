@@ -503,7 +503,7 @@ The application works with its default configuration.
 Optional settings can be placed in `.env.local`:
 
 ```env
-WORKBOOK_PATH=./data/facebook_dataset.xlsx (default; you can change it as per preferences)
+WORKBOOK_PATH=./data/facebook_dataset.xlsx   #(default; you can change it as per preferences)
 BACKUP_DIR=./data/backups
 PORT=3000
 ```
