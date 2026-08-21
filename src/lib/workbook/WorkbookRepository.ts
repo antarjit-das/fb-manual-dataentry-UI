@@ -20,7 +20,6 @@ import ExcelJS from "exceljs";
 import * as fs from "fs";
 import * as path from "path";
 import type {
-  Post,
   Comment,
   Reply,
   Source,
@@ -50,7 +49,6 @@ import {
   rowToPost,
   rowToComment,
   rowToReply,
-  rowToSource,
   rowToRecord,
 } from "./mappers";
 
@@ -165,24 +163,7 @@ function readColumnValues(
   return values;
 }
 
-/**
- * Find the row number for a given primary key value in a worksheet.
- * Returns -1 if not found.
- */
-function findRowByKey(
-  ws: ExcelJS.Worksheet,
-  keyColumnIndex: number,
-  keyValue: string
-): number {
-  let found = -1;
-  ws.eachRow((row, rowNumber) => {
-    if (rowNumber === 1) return;
-    if (String(row.getCell(keyColumnIndex).value) === keyValue) {
-      found = rowNumber;
-    }
-  });
-  return found;
-}
+
 
 // ────────────────────────────────────────────────────────────────────────────
 // Backup
@@ -400,7 +381,7 @@ export async function getPost(postId: string): Promise<PostFormData | null> {
   // Reconstruct arbitrary-depth tree from flat comment and reply rows
   const replyNodes = new Map<string, ReplyFormData & { parentId: string }>();
   for (const r of allReplies) {
-    const parentId = r.parent_id || (r as any).comment_id || "";
+    const parentId = r.parent_id || "";
     replyNodes.set(r.reply_id, {
       reply_id: r.reply_id,
       commenter_name: r.commenter_name || "",

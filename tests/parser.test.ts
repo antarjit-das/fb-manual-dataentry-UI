@@ -601,6 +601,51 @@ Reply
     assert.equal(result.dataset.comments[0].like_count, 0);
     assert.equal(result.dataset.comments[0].replies![0].like_count, 0);
   });
+
+  it("parses arbitrary N-level nested reply tree (Comment -> Reply -> Reply -> Reply) from raw text", () => {
+    const raw = `
+Kaushiki Chakrabarti
+·
+10w
+ব্ল্যাঙ্ক ফায়ার করল? পা বরাবর করল না?
+Reply
+Joydeb Debnath
+·
+10w
+Kaushiki Chakrabarti এক গুলিয়ে ফেলে দিয়েছে ব্ল্যাং ফায়ার নয়, আপনি ভালো করে ভিডিওটা দেখুন
+Reply
+Madan Rajbongshi
+·
+7w
+Joydeb Debnath aita blank fire doyalu BSF
+Reply
+Deepak Sen
+·
+5w
+Madan Rajbongshi একদম সঠিক কথা বলেছেন
+Reply
+`;
+    const result = parseFacebookRawText(raw);
+    assert.equal(result.metrics.commentsDetected, 1);
+    assert.equal(result.metrics.repliesDetected, 3);
+    assert.equal(result.dataset.comments.length, 1);
+
+    const rootComment = result.dataset.comments[0];
+    assert.equal(rootComment.commenter_name, "Kaushiki Chakrabarti");
+    assert.equal(rootComment.replies!.length, 1);
+
+    const level1Reply = rootComment.replies![0];
+    assert.equal(level1Reply.commenter_name, "Joydeb Debnath");
+    assert.equal(level1Reply.replies!.length, 1);
+
+    const level2Reply = level1Reply.replies![0];
+    assert.equal(level2Reply.commenter_name, "Madan Rajbongshi");
+    assert.equal(level2Reply.replies!.length, 1);
+
+    const level3Reply = level2Reply.replies![0];
+    assert.equal(level3Reply.commenter_name, "Deepak Sen");
+    assert.equal(level3Reply.replies!.length, 0);
+  });
 });
 
 describe("PART 15: Post-Level Count Precision System (Test Cases A through J)", () => {

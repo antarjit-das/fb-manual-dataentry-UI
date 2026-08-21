@@ -6,7 +6,7 @@
  */
 
 import { useState, useRef, ChangeEvent } from "react";
-import { CanonicalDatasetSchema, isoToLanguage } from "@/lib/schemas";
+import { CanonicalDatasetSchema } from "@/lib/schemas";
 import { parseFacebookRawText } from "@/lib/parser";
 import type {
   CanonicalDataset,

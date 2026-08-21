@@ -8,7 +8,6 @@
 
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import PostForm from "@/components/post/PostForm";
 import type { PostFormData, SaveResult } from "@/lib/types";
 
@@ -17,7 +16,6 @@ export default function EditPostPage({
 }: {
   params: Promise<{ postId: string }>;
 }) {
-  const router = useRouter();
   const { postId } = use(params);
 
   const [loading, setLoading] = useState(true);

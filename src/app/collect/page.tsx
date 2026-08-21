@@ -8,12 +8,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import PostForm from "@/components/post/PostForm";
 import type { SaveResult } from "@/lib/types";
 
 export default function CollectPage() {
-  const router = useRouter();
   const [savedResult, setSavedResult] = useState<SaveResult | null>(null);
 
   // Warn before closing tab / navigating away if unsaved

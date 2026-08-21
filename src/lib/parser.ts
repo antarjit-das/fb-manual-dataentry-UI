@@ -385,47 +385,80 @@ export function segmentBlocks(rawText: string): {
 // ────────────────────────────────────────────────────────────────────────────
 
 /**
+ * Helper to match author prefix in raw comment/reply text.
+ * Checks for author name followed by space, newline, colon, comma, or end of string.
+ * Returns the longest matching author name.
+ */
+function matchAuthorPrefix(
+  text: string,
+  authorMap: Map<string, (CanonicalComment | CanonicalReply)[]>
+): string | null {
+  const matched: string[] = [];
+  for (const author of authorMap.keys()) {
+    if (!author) continue;
+    if (
+      text === author ||
+      text.startsWith(author + " ") ||
+      text.startsWith(author + "\n") ||
+      text.startsWith(author + ":") ||
+      text.startsWith(author + ",") ||
+      text.startsWith("@" + author + " ") ||
+      text.startsWith("@" + author + "\n")
+    ) {
+      matched.push(author);
+    }
+  }
+  if (matched.length === 0) return null;
+  const maxLen = Math.max(...matched.map((a) => a.length));
+  return matched.find((a) => a.length === maxLen) || null;
+}
+
+function countRepliesRecursive(replies?: CanonicalReply[]): number {
+  if (!replies || replies.length === 0) return 0;
+  return replies.reduce(
+    (sum, r) => sum + 1 + countRepliesRecursive(r.replies),
+    0
+  );
+}
+
+/**
  * Reconstructs hierarchical CanonicalDataset from segmented blocks.
- * Uses leading parent names as structural hierarchy signals, while
- * strictly PRESERVING the full text inside `reply_text`.
+ * Uses leading parent names as structural hierarchy signals, supports arbitrary
+ * N-level nested reply chains (Reply -> Reply -> Reply), while strictly PRESERVING
+ * the full text inside `reply_text`.
  */
 export function buildCanonicalDataset(
   blocks: RawBlock[],
   mediaDiscardedCount: number = 0
 ): ParseResult {
   const comments: CanonicalComment[] = [];
-  let currentParentComment: CanonicalComment | null = null;
-  const knownCommenters: string[] = [];
+  const globalAuthorMap = new Map<string, (CanonicalComment | CanonicalReply)[]>();
+  const threadAuthorMap = new Map<string, (CanonicalComment | CanonicalReply)[]>();
 
-  let repliesDetected = 0;
   let ambiguousRecords = 0;
 
   for (const block of blocks) {
     const fullText = block.lines.join("\n").trim();
     if (!fullText) continue;
 
-    // Check if the text begins with a known commenter's name (indicating a reply)
-    let matchedParentName: string | null = null;
+    // 1. Try matching within current active thread tree first
+    let targetAuthor = matchAuthorPrefix(fullText, threadAuthorMap);
+    let targetNode: CanonicalComment | CanonicalReply | null = null;
 
-    // 1. Check active parent comment author first
-    if (
-      currentParentComment &&
-      fullText.startsWith(currentParentComment.commenter_name)
-    ) {
-      matchedParentName = currentParentComment.commenter_name;
+    if (targetAuthor && threadAuthorMap.has(targetAuthor)) {
+      const list = threadAuthorMap.get(targetAuthor)!;
+      targetNode = list[list.length - 1];
     } else {
-      // 2. Check any previously known commenter name
-      for (const name of knownCommenters) {
-        if (name && fullText.startsWith(name)) {
-          matchedParentName = name;
-          break;
-        }
+      // 2. Try matching across global author registry
+      targetAuthor = matchAuthorPrefix(fullText, globalAuthorMap);
+      if (targetAuthor && globalAuthorMap.has(targetAuthor)) {
+        const list = globalAuthorMap.get(targetAuthor)!;
+        targetNode = list[list.length - 1];
       }
     }
 
-    if (matchedParentName && currentParentComment) {
-      // This is a reply referencing a parent author
-      // CRITICAL: Preserve fullText in reply_text! Do NOT strip the matched name.
+    if (targetNode !== null) {
+      // Create nested CanonicalReply object
       const replyObj: CanonicalReply = {
         commenter_name: block.author,
         reply_text: fullText,
@@ -439,26 +472,21 @@ export function buildCanonicalDataset(
         replies: [],
       };
 
-      // If matchedParentName belongs to currentParentComment, add to currentParentComment
-      if (currentParentComment.commenter_name === matchedParentName) {
-        currentParentComment.replies = currentParentComment.replies || [];
-        currentParentComment.replies.push(replyObj);
-      } else {
-        // Find the matching parent comment in comments array
-        const targetParent = comments.find(
-          (c) => c.commenter_name === matchedParentName
-        );
-        if (targetParent) {
-          targetParent.replies = targetParent.replies || [];
-          targetParent.replies.push(replyObj);
-        } else {
-          currentParentComment.replies = currentParentComment.replies || [];
-          currentParentComment.replies.push(replyObj);
-        }
+      targetNode.replies = targetNode.replies || [];
+      targetNode.replies.push(replyObj);
+
+      // Register replier author into active thread & global author maps
+      if (!threadAuthorMap.has(block.author)) {
+        threadAuthorMap.set(block.author, []);
       }
-      repliesDetected++;
+      threadAuthorMap.get(block.author)!.push(replyObj);
+
+      if (!globalAuthorMap.has(block.author)) {
+        globalAuthorMap.set(block.author, []);
+      }
+      globalAuthorMap.get(block.author)!.push(replyObj);
     } else {
-      // This is a new top-level comment
+      // Create new top-level CanonicalComment object
       const newComment: CanonicalComment = {
         commenter_name: block.author,
         comment_text: fullText,
@@ -472,10 +500,15 @@ export function buildCanonicalDataset(
         replies: [],
       };
       comments.push(newComment);
-      currentParentComment = newComment;
-      if (!knownCommenters.includes(block.author)) {
-        knownCommenters.push(block.author);
+
+      // Start new active thread scope
+      threadAuthorMap.clear();
+      threadAuthorMap.set(block.author, [newComment]);
+
+      if (!globalAuthorMap.has(block.author)) {
+        globalAuthorMap.set(block.author, []);
       }
+      globalAuthorMap.get(block.author)!.push(newComment);
     }
   }
 
@@ -487,9 +520,14 @@ export function buildCanonicalDataset(
     ambiguousRecords += validation.error.issues.length;
   }
 
+  const totalRepliesDetected = comments.reduce(
+    (sum, c) => sum + countRepliesRecursive(c.replies),
+    0
+  );
+
   const metrics: ParseMetrics = {
     commentsDetected: comments.length,
-    repliesDetected,
+    repliesDetected: totalRepliesDetected,
     mediaOnlyDiscarded: mediaDiscardedCount,
     ambiguousRecords,
   };

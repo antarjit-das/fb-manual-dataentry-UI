@@ -27,7 +27,6 @@ This utility bridges the gap between raw social media observation and rigorous e
 - It does **not** modify or trim user text during persistence.
 - It does **not** rely on external cloud databases (all storage is local-first in Excel `.xlsx`).
 
-> [AUTHOR: Insert the specific academic research project name, institutional affiliation, funding details, or primary research question here.]
 
 ---
 

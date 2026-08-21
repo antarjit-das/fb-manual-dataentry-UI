@@ -76,7 +76,7 @@ export interface RelationshipError {
 
 export function validateRelationships(
   postId: string,
-  comments: Array<{ comment_id?: string; replies?: any[] }>
+  comments: CommentFormData[]
 ): RelationshipError[] {
   const errors: RelationshipError[] = [];
 
@@ -89,7 +89,7 @@ export function validateRelationships(
     return errors;
   }
 
-  function validateReplyTree(replies: any[] | undefined, cIdx: number, parentId: string) {
+  function validateReplyTree(replies: ReplyFormData[] | undefined, cIdx: number, parentId: string) {
     if (!replies) return;
     replies.forEach((reply, rIdx) => {
       if (reply.reply_id && !isValidId("reply", reply.reply_id)) {

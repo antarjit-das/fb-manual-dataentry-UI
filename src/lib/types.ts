@@ -13,8 +13,6 @@ import {
   SourceSchema,
   PostFormSchema,
   CommentFormSchema,
-  ReplyFormSchema,
-  CanonicalReplySchema,
   CanonicalCommentSchema,
   CanonicalDatasetSchema,
   type CanonicalReply,

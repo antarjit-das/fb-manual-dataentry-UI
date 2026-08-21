@@ -21,33 +21,42 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchData = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const [sumRes, postsRes] = await Promise.all([
-        fetch("/api/summary"),
-        fetch("/api/posts"),
-      ]);
-
-      if (!sumRes.ok || !postsRes.ok) {
-        throw new Error("Failed to load dataset records from the local workbook.");
-      }
-
-      const sumJson = await sumRes.json();
-      const postsJson = await postsRes.json();
-
-      setSummary(sumJson);
-      setPosts(postsJson);
-    } catch (err: any) {
-      setError(err.message || "Failed to load dashboard data");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchData();
+    let isMounted = true;
+    const load = async () => {
+      setError(null);
+      try {
+        const [sumRes, postsRes] = await Promise.all([
+          fetch("/api/summary"),
+          fetch("/api/posts"),
+        ]);
+
+        if (!sumRes.ok || !postsRes.ok) {
+          throw new Error("Failed to load dataset records from the local workbook.");
+        }
+
+        const sumJson = await sumRes.json();
+        const postsJson = await postsRes.json();
+
+        if (isMounted) {
+          setSummary(sumJson);
+          setPosts(postsJson);
+        }
+      } catch (err: any) {
+        if (isMounted) {
+          setError(err.message || "Failed to load dashboard data");
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    load();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const formatLastSaved = (ts: string | null) => {
