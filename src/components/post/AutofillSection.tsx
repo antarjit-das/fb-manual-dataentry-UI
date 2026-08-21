@@ -173,8 +173,8 @@ export default function AutofillSection({ onAutofill }: AutofillSectionProps) {
     <section
       className="form-section mb-3"
       style={{
-        border: "1px solid var(--border-accent, #3b82f6)",
-        background: "var(--bg-surface-elevated, #181c24)",
+        border: "1px solid var(--accent-primary)",
+        background: "var(--bg-surface-elevated)",
         borderRadius: "8px",
         overflow: "hidden",
       }}
@@ -186,8 +186,8 @@ export default function AutofillSection({ onAutofill }: AutofillSectionProps) {
           justifyContent: "space-between",
           alignItems: "center",
           padding: "0.75rem 1.25rem",
-          background: "rgba(59, 130, 246, 0.08)",
-          borderBottom: isOpen ? "1px solid var(--border-subtle, #2d3748)" : "none",
+          background: "var(--accent-subtle)",
+          borderBottom: isOpen ? "1px solid var(--border-subtle)" : "none",
           cursor: "pointer",
         }}
         onClick={() => setIsOpen(!isOpen)}
@@ -199,7 +199,7 @@ export default function AutofillSection({ onAutofill }: AutofillSectionProps) {
               width: "8px",
               height: "8px",
               borderRadius: "50%",
-              backgroundColor: "#3b82f6",
+              backgroundColor: "var(--accent-text)",
             }}
           />
           <strong style={{ fontSize: "0.9375rem", color: "var(--text-primary)" }}>

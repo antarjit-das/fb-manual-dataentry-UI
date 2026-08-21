@@ -11,7 +11,7 @@
   /* Borders */
   --border-subtle: rgba(255, 255, 255, 0.07);
   --border-medium: rgba(255, 255, 255, 0.12);
-  --border-focus: #3d6a90;
+  --border-focus: #5d774e;
 
   /* Typography */
   --text-primary: #e7e7e7;
@@ -19,12 +19,12 @@
   --text-tertiary: #737373;
   --text-muted: #5c5c5c;
 
-  /* Accent - Desaturated Navy/Slate Blue */
-  --accent-primary: #315a7d;
-  --accent-hover: #3b6b94;
-  --accent-active: #284b68;
-  --accent-subtle: rgba(49, 90, 125, 0.2);
-  --accent-text: #8fb6d9;
+  /* Accent - Minimalist Sophisticated Olive / Sage */
+  --accent-primary: #4a613d;
+  --accent-hover: #597349;
+  --accent-active: #3c4f31;
+  --accent-subtle: rgba(74, 97, 61, 0.22);
+  --accent-text: #a8c499;
 
   /* Feedback Colors (Restrained & Muted) */
   --success-bg: rgba(35, 78, 54, 0.35);
@@ -39,9 +39,9 @@
   --warning-border: rgba(150, 114, 40, 0.45);
   --warning-text: #e6c575;
 
-  --info-bg: rgba(30, 58, 82, 0.35);
-  --info-border: rgba(49, 90, 125, 0.45);
-  --info-text: #96c4ea;
+  --info-bg: rgba(45, 60, 42, 0.35);
+  --info-border: rgba(74, 97, 61, 0.45);
+  --info-text: #b1cca3;
 
   /* Geometry & Typography metrics */
   --radius-sm: 4px;
@@ -83,7 +83,7 @@ a {
 }
 
 a:hover {
-  color: #b5d5f2;
+  color: #c5debb;
 }
 
 /* ===== Layout Container ===== */
